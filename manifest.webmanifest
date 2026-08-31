@@ -1,7 +1,7 @@
 {
   "name": "Meine Spiele",
   "short_name": "Spiele",
-  "description": "Private, werbefreie Spielesammlung fuer Kinder.",
+  "description": "Private, werbefreie Spielesammlung für Kinder.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

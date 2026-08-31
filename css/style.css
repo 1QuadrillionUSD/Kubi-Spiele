@@ -338,29 +338,32 @@ h1 {
   left: clamp(18px, 4vw, 34px);
   right: clamp(18px, 4vw, 34px);
   bottom: clamp(18px, 4vw, 34px);
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 16px;
 }
 
 .tile-title {
+  display: block;
   color: white;
-  font-size: clamp(2.2rem, 7vw, 4.9rem);
+  font-size: clamp(1.8rem, 7vw, 3.6rem);
   font-weight: 1000;
   line-height: 0.95;
   text-shadow: 0 5px 18px rgba(23, 50, 77, 0.26);
+  overflow-wrap: break-word;
 }
 
-.tile-action {
-  min-width: 104px;
-  min-height: 64px;
+.tile-badge {
+  position: absolute;
+  top: clamp(16px, 3vw, 28px);
+  right: clamp(16px, 3vw, 28px);
+  z-index: 2;
+  min-width: 96px;
+  min-height: 56px;
+  padding: 0 14px;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
   background: var(--sun);
   color: #5b3b00;
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 1000;
   box-shadow: 0 9px 0 #e8ad32;
 }
@@ -388,10 +391,5 @@ h1 {
 
   .game-tile {
     min-height: 58svh;
-  }
-
-  .tile-label {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }

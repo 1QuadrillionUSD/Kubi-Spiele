@@ -6,8 +6,14 @@ registerServiceWorker({
   onReady() {
     if (installStatus) installStatus.textContent = "Offline bereit";
   },
+  onInstalling() {
+    if (installStatus) installStatus.textContent = "Wird eingerichtet";
+  },
   onUpdateFound() {
-    if (installStatus) installStatus.textContent = "Update laedt";
+    if (installStatus) installStatus.textContent = "Update wird geladen";
+  },
+  onUpdated() {
+    if (installStatus) installStatus.textContent = "Offline bereit";
   },
   onError() {
     if (installStatus) installStatus.textContent = "Online bereit";
