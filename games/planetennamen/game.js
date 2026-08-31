@@ -45,7 +45,7 @@ const bodies = [
     name: { de: "Venus", sk: "Venuša" },
     kind: { de: "Planet", sk: "Planéta" },
     x: 25,
-    y: 34,
+    y: 39.8,
     w: 66,
     h: 66,
     orbit: 34,
@@ -120,7 +120,7 @@ const bodies = [
     name: { de: "Mars", sk: "Mars" },
     kind: { de: "Planet", sk: "Planéta" },
     x: 46,
-    y: 29,
+    y: 35.3,
     w: 56,
     h: 56,
     orbit: 56,
@@ -271,6 +271,20 @@ function bilingualLabel(names) {
   return names.de === names.sk ? names.de : `${names.de} / ${names.sk}`;
 }
 
+const ORBIT_LEFT = -4;
+const ORBIT_CENTER_Y = 50;
+const ORBIT_MAX_RATIO = 0.85;
+
+function fitOrbitHeight(body) {
+  const a = body.orbit / 2;
+  const centerX = ORBIT_LEFT + a;
+  const dx = body.x - centerX;
+  const root = Math.sqrt(1 - (dx / a) ** 2);
+  const naturalRatio = Math.abs(body.y - ORBIT_CENTER_Y) / (a * root);
+  const ratio = Math.min(naturalRatio, ORBIT_MAX_RATIO);
+  return 2 * ratio * a;
+}
+
 registerServiceWorker({
   scriptUrl: "../../service-worker.js",
   scope: "../../",
@@ -293,7 +307,7 @@ function renderSystem() {
     const orbit = document.createElement("span");
     orbit.className = "orbit";
     orbit.style.setProperty("--orbit-size", `${body.orbit}%`);
-    orbit.style.setProperty("--orbit-height", `${body.orbit * 0.46}%`);
+    orbit.style.setProperty("--orbit-height", `${fitOrbitHeight(body)}%`);
     system.append(orbit);
   }
 

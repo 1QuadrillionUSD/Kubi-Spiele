@@ -159,16 +159,28 @@ h1 {
   border-radius: 50%;
 }
 
-.orbit-one {
-  inset: 24% 12% 18% 9%;
+.orbit-mercury {
+  inset: 46.25% 51% 46.25% 19%;
 }
 
-.orbit-two {
-  inset: 13% 0 8% 0;
+.orbit-venus {
+  inset: 36.04% 36% 36.04% 19%;
 }
 
-.orbit-three {
-  inset: 2% -16% -6% -12%;
+.orbit-earth {
+  inset: 37.5% 26% 37.5% 19%;
+}
+
+.orbit-mars {
+  inset: 22.38% 16% 22.38% 19%;
+}
+
+.orbit-jupiter {
+  inset: 42.04% 3% 42.04% 19%;
+}
+
+.orbit-saturn {
+  inset: 19.18% -11% 19.18% 19%;
 }
 
 .mini-planet {
@@ -180,7 +192,7 @@ h1 {
 
 .mini-planet.mercury {
   left: 38%;
-  top: 47%;
+  top: 44.1%;
   width: 5%;
   aspect-ratio: 1;
   background: #ad9a7b;
@@ -204,7 +216,7 @@ h1 {
 
 .mini-planet.mars {
   left: 67%;
-  top: 23%;
+  top: 24.2%;
   width: 6.5%;
   aspect-ratio: 1;
   background: #c95b48;
