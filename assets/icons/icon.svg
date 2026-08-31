@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Meine Spiele Icon">
+  <rect width="512" height="512" rx="112" fill="#33a474"/>
+  <circle cx="392" cy="92" r="44" fill="#ffd45f"/>
+  <path d="M150 86h212c24 0 44 20 44 44v310H106V130c0-24 20-44 44-44z" fill="#596877"/>
+  <path d="M168 86v354M344 86v354" stroke="#ffffff" stroke-width="22" stroke-linecap="round" opacity=".65"/>
+  <path d="M256 106v70M256 236v70M256 366v58" stroke="#fff7bd" stroke-width="20" stroke-linecap="round"/>
+  <path d="M210 276h92c18 0 32 14 32 32v88c0 18-14 32-32 32h-92c-18 0-32-14-32-32v-88c0-18 14-32 32-32z" fill="#df2f46"/>
+  <path d="M214 310h84v42h-84z" rx="12" fill="#a7eaff"/>
+  <circle cx="166" cy="188" r="26" fill="#ef4444"/>
+  <path d="M350 198c-28 20-58 22-82 2 13 39 56 56 91 30 8-6 1-38-9-32z" fill="#ffd84d"/>
+  <path d="M176 183c12-18 25-17 35-29-1 23-12 39-35 29z" fill="#2f8f4e"/>
+</svg>

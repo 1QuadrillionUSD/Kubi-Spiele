@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#33a474">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Autorennen">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Autorennen</title>
+    <link rel="manifest" href="../../manifest.webmanifest">
+    <link rel="apple-touch-icon" href="../../assets/icons/apple-touch-icon.png">
+    <link rel="icon" href="../../assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./game.js"></script>
+  </head>
+  <body>
+    <main class="game-page">
+      <div class="top-bar" aria-label="Spielwerte">
+        <a class="icon-button home-button" href="../../" aria-label="Zur Spielesammlung">
+          <span aria-hidden="true">&#8962;</span>
+        </a>
+        <div class="score-box">
+          <span class="label">Punkte</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="score-box">
+          <span class="label">Bestwert</span>
+          <strong id="highscore">0</strong>
+        </div>
+      </div>
+
+      <section class="play-area" aria-label="Autorennen">
+        <canvas id="game-canvas" aria-label="Autorennen Spielfeld"></canvas>
+        <div class="touch-hint" aria-hidden="true">
+          <span>&larr;</span>
+          <span>ziehen</span>
+          <span>&rarr;</span>
+        </div>
+        <div class="start-panel" id="start-panel">
+          <h1>Autorennen</h1>
+          <button class="primary-button" id="start-button" type="button">
+            <span aria-hidden="true">&#9654;</span>
+            <span>Start</span>
+          </button>
+        </div>
+      </section>
+
+      <div class="control-bar" aria-label="Spielsteuerung">
+        <button class="control-button" id="left-button" type="button" aria-label="Nach links lenken">
+          <span aria-hidden="true">&larr;</span>
+        </button>
+        <button class="control-button" id="pause-button" type="button" aria-label="Pause">
+          <span aria-hidden="true">&#10074;&#10074;</span>
+        </button>
+        <button class="control-button" id="restart-button" type="button" aria-label="Neustart">
+          <span aria-hidden="true">&#8635;</span>
+        </button>
+        <button class="control-button" id="right-button" type="button" aria-label="Nach rechts lenken">
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+    </main>
+  </body>
+</html>

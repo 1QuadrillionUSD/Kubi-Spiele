@@ -1,0 +1,236 @@
+:root {
+  color-scheme: light;
+  --ink: #17324d;
+  --panel: rgba(255, 254, 250, 0.9);
+  --green: #33a474;
+  --green-dark: #127657;
+  --sun: #ffd45f;
+  --red: #f05a62;
+  font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #88d9f2;
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.game-page {
+  width: 100%;
+  height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  padding:
+    max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  background:
+    linear-gradient(180deg, rgba(255, 212, 95, 0.55), rgba(136, 217, 242, 0) 36%),
+    #88d9f2;
+}
+
+.top-bar,
+.control-bar {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.top-bar {
+  grid-template-columns: 64px 1fr 1fr;
+}
+
+.control-bar {
+  grid-template-columns: repeat(4, minmax(58px, 1fr));
+}
+
+.icon-button,
+.control-button,
+.primary-button {
+  min-height: 58px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 9px 0 rgba(23, 50, 77, 0.15);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  min-width: 58px;
+  font-size: 2rem;
+  font-weight: 1000;
+}
+
+.control-button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  font-size: clamp(1.55rem, 5vw, 2.3rem);
+  font-weight: 1000;
+}
+
+.control-button:active,
+.control-button.is-held,
+.icon-button:active,
+.primary-button:active {
+  transform: translateY(5px);
+  box-shadow: 0 4px 0 rgba(23, 50, 77, 0.15);
+}
+
+.score-box {
+  min-width: 0;
+  min-height: 58px;
+  display: grid;
+  align-content: center;
+  padding: 7px 14px;
+  border-radius: 22px;
+  background: var(--panel);
+  box-shadow: 0 9px 0 rgba(23, 50, 77, 0.12);
+}
+
+.score-box .label {
+  color: var(--green-dark);
+  font-size: clamp(0.74rem, 2.2vw, 0.94rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.score-box strong {
+  overflow: hidden;
+  font-size: clamp(1.28rem, 4.6vw, 2.15rem);
+  line-height: 1.05;
+  text-overflow: ellipsis;
+}
+
+.play-area {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border: 5px solid rgba(255, 254, 250, 0.76);
+  border-radius: 28px;
+  background: #64c36e;
+  box-shadow: 0 18px 38px rgba(23, 50, 77, 0.18);
+  touch-action: none;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.touch-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.65);
+  color: rgba(23, 50, 77, 0.7);
+  font-weight: 1000;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.start-panel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 18px;
+  padding: 24px;
+  background: rgba(136, 217, 242, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.start-panel.is-hidden {
+  display: none;
+}
+
+.start-panel h1 {
+  margin: 0;
+  color: white;
+  font-size: clamp(2.5rem, 12vw, 6.5rem);
+  line-height: 0.92;
+  text-align: center;
+  text-shadow: 0 6px 22px rgba(23, 50, 77, 0.24);
+}
+
+.primary-button {
+  min-width: min(78vw, 320px);
+  min-height: 78px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 30px;
+  background: var(--sun);
+  color: #5b3b00;
+  font-size: clamp(1.45rem, 6vw, 2.2rem);
+  font-weight: 1000;
+  box-shadow: 0 11px 0 #e5ad33;
+}
+
+#pause-button {
+  background: #fffefa;
+}
+
+#restart-button {
+  background: #fff1a8;
+}
+
+#left-button,
+#right-button {
+  background: #dff7ff;
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .game-page {
+    grid-template-columns: minmax(150px, 190px) 1fr minmax(150px, 190px);
+    grid-template-rows: 1fr;
+    gap: 10px;
+  }
+
+  .top-bar,
+  .control-bar {
+    grid-template-columns: 1fr;
+    align-content: start;
+  }
+
+  .play-area {
+    height: 100%;
+  }
+}
