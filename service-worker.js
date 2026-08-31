@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.1.0";
+const CACHE_VERSION = "meine-spiele-v1.2.0";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [

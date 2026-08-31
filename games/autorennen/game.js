@@ -4,7 +4,7 @@ import { setText } from "../../shared/ui/dom.js";
 import { loadHighscore, saveHighscore } from "../../shared/utils/highscore.js";
 import { registerServiceWorker } from "../../shared/utils/pwa.js";
 import { playCollectSound } from "../../shared/utils/sound.js";
-import { createHorizontalPointerControl } from "../../shared/utils/touch.js";
+import { createHorizontalDragControl } from "../../shared/utils/touch.js";
 
 const canvas = document.querySelector("#game-canvas");
 const context = canvas.getContext("2d");
@@ -38,6 +38,7 @@ let fruits = [];
 let obstacles = [];
 let popups = [];
 let keys = { left: false, right: false };
+let dragStartTargetX = 0;
 
 setText("#highscore", highscore);
 resizeCanvas();
@@ -59,9 +60,15 @@ bindButton("#restart-button", () => {
 bindHoldButton("#left-button", "left");
 bindHoldButton("#right-button", "right");
 
-createHorizontalPointerControl(canvas, ({ x }) => {
-  if (state !== GameState.RUNNING) return;
-  car.targetX = road.x + x * road.width;
+createHorizontalDragControl(canvas, {
+  onStart() {
+    dragStartTargetX = car.targetX;
+  },
+  onMove({ dx }) {
+    if (state !== GameState.RUNNING) return;
+    car.targetX = dragStartTargetX + dx * 1.08;
+    clampCarToRoad();
+  },
 });
 
 window.addEventListener("resize", () => {
@@ -154,6 +161,7 @@ function resizeCanvas() {
   canvas.width = Math.floor(width * ratio);
   canvas.height = Math.floor(height * ratio);
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  context.imageSmoothingEnabled = false;
 
   const roadWidth = Math.min(width * 0.68, 430);
   road = {
@@ -195,7 +203,7 @@ function update(delta) {
 
   if (obstacleTimer <= 0) {
     spawnObstacle();
-    obstacleTimer = Math.max(1.45, random(2.25, 3.45) - elapsedTime * 0.012);
+    obstacleTimer = Math.max(1.85, random(2.8, 4.1) - elapsedTime * 0.006);
   }
 
   updateCar(delta);
@@ -205,7 +213,8 @@ function update(delta) {
 }
 
 function getGameSpeed() {
-  return Math.min(420, 138 + elapsedTime * 5.8 + score * 0.8);
+  const warmupTime = Math.max(0, elapsedTime - 5);
+  return Math.min(335, 132 + warmupTime * 2.45 + score * 0.35);
 }
 
 function updateCar(delta) {
@@ -365,7 +374,6 @@ function draw() {
 }
 
 function drawWorld() {
-  const skyHeight = height * 0.28;
   const gradient = context.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, "#92ddf4");
   gradient.addColorStop(0.35, "#a8e36f");
@@ -377,63 +385,44 @@ function drawWorld() {
   context.beginPath();
   context.arc(width - 62, 58, 34, 0, Math.PI * 2);
   context.fill();
-
-  drawSideFlowers(skyHeight);
-}
-
-function drawSideFlowers(offsetTop) {
-  const spacing = 86;
-  const shift = distance % spacing;
-  for (let y = offsetTop - shift; y < height + spacing; y += spacing) {
-    drawFlower(road.x * 0.45, y, "#ffcf5d");
-    drawFlower(road.x + road.width + (width - road.x - road.width) * 0.55, y + 34, "#f47aa0");
-  }
-}
-
-function drawFlower(x, y, color) {
-  context.fillStyle = color;
-  for (let i = 0; i < 5; i += 1) {
-    const angle = i * Math.PI * 0.4;
-    context.beginPath();
-    context.arc(x + Math.cos(angle) * 8, y + Math.sin(angle) * 8, 6, 0, Math.PI * 2);
-    context.fill();
-  }
-  context.fillStyle = "#fffefa";
-  context.beginPath();
-  context.arc(x, y, 5, 0, Math.PI * 2);
-  context.fill();
 }
 
 function drawRoad() {
+  const roadX = crisp(road.x);
+  const roadY = crisp(road.y);
+  const roadWidth = crisp(road.width);
+  const roadHeight = crisp(road.height);
+  const roadCenter = crisp(road.x + road.width / 2);
+
   context.fillStyle = "#596877";
-  roundedRect(road.x, road.y, road.width, road.height, 32);
+  roundedRect(roadX, roadY, roadWidth, roadHeight, 32);
   context.fill();
 
   context.strokeStyle = "rgba(255, 255, 255, 0.72)";
   context.lineWidth = 10;
   context.setLineDash([]);
   context.beginPath();
-  context.moveTo(road.x + 18, road.y + 18);
-  context.lineTo(road.x + 18, road.y + road.height - 18);
-  context.moveTo(road.x + road.width - 18, road.y + 18);
-  context.lineTo(road.x + road.width - 18, road.y + road.height - 18);
+  context.moveTo(crisp(road.x + 18), crisp(road.y + 18));
+  context.lineTo(crisp(road.x + 18), crisp(road.y + road.height - 18));
+  context.moveTo(crisp(road.x + road.width - 18), crisp(road.y + 18));
+  context.lineTo(crisp(road.x + road.width - 18), crisp(road.y + road.height - 18));
   context.stroke();
 
   context.strokeStyle = "#fff7bd";
   context.lineWidth = 10;
   context.lineCap = "round";
   context.setLineDash([36, 42]);
-  context.lineDashOffset = -(distance % 78);
+  context.lineDashOffset = -Math.round(distance % 78);
   context.beginPath();
-  context.moveTo(road.x + road.width / 2, road.y);
-  context.lineTo(road.x + road.width / 2, road.y + road.height);
+  context.moveTo(roadCenter, roadY);
+  context.lineTo(roadCenter, roadY + roadHeight);
   context.stroke();
   context.setLineDash([]);
 }
 
 function drawCar() {
-  const x = car.x - car.width / 2;
-  const y = car.y;
+  const x = crisp(car.x - car.width / 2);
+  const y = crisp(car.y);
 
   context.fillStyle = "rgba(23, 50, 77, 0.24)";
   roundedRect(x + 5, y + car.height - 6, car.width - 10, 14, 8);
@@ -486,7 +475,7 @@ function drawObstacles() {
 
 function drawBomb(obstacle) {
   context.save();
-  context.translate(obstacle.x, obstacle.y);
+  context.translate(crisp(obstacle.x), crisp(obstacle.y));
   context.rotate(Math.sin(obstacle.spin) * 0.08);
 
   context.fillStyle = "rgba(23, 50, 77, 0.2)";
@@ -521,8 +510,8 @@ function drawBomb(obstacle) {
 }
 
 function drawWall(obstacle) {
-  const x = obstacle.x - obstacle.width / 2;
-  const y = obstacle.y - obstacle.height / 2;
+  const x = crisp(obstacle.x - obstacle.width / 2);
+  const y = crisp(obstacle.y - obstacle.height / 2);
 
   context.fillStyle = "rgba(23, 50, 77, 0.22)";
   roundedRect(x + 4, y + obstacle.height - 2, obstacle.width - 8, 10, 5);
@@ -545,20 +534,23 @@ function drawWall(obstacle) {
 }
 
 function drawApple(fruit) {
+  const x = crisp(fruit.x);
+  const y = crisp(fruit.y);
+
   context.fillStyle = fruit.color;
   context.beginPath();
-  context.arc(fruit.x - 6, fruit.y + 2, fruit.radius * 0.72, 0, Math.PI * 2);
-  context.arc(fruit.x + 6, fruit.y + 2, fruit.radius * 0.72, 0, Math.PI * 2);
+  context.arc(x - 6, y + 2, fruit.radius * 0.72, 0, Math.PI * 2);
+  context.arc(x + 6, y + 2, fruit.radius * 0.72, 0, Math.PI * 2);
   context.fill();
   context.fillStyle = "#2f8f4e";
   context.beginPath();
-  context.ellipse(fruit.x + 8, fruit.y - 18, 8, 4, -0.6, 0, Math.PI * 2);
+  context.ellipse(x + 8, y - 18, 8, 4, -0.6, 0, Math.PI * 2);
   context.fill();
 }
 
 function drawBanana(fruit) {
   context.save();
-  context.translate(fruit.x, fruit.y);
+  context.translate(crisp(fruit.x), crisp(fruit.y));
   context.rotate(Math.sin(fruit.spin) * 0.2 - 0.35);
   context.strokeStyle = "#ffd84d";
   context.lineWidth = 15;
@@ -575,17 +567,20 @@ function drawBanana(fruit) {
 }
 
 function drawStrawberry(fruit) {
+  const x = crisp(fruit.x);
+  const y = crisp(fruit.y);
+
   context.fillStyle = fruit.color;
   context.beginPath();
-  context.moveTo(fruit.x, fruit.y + fruit.radius);
-  context.bezierCurveTo(fruit.x - 24, fruit.y - 3, fruit.x - 13, fruit.y - 22, fruit.x, fruit.y - 12);
-  context.bezierCurveTo(fruit.x + 13, fruit.y - 22, fruit.x + 24, fruit.y - 3, fruit.x, fruit.y + fruit.radius);
+  context.moveTo(x, y + fruit.radius);
+  context.bezierCurveTo(x - 24, y - 3, x - 13, y - 22, x, y - 12);
+  context.bezierCurveTo(x + 13, y - 22, x + 24, y - 3, x, y + fruit.radius);
   context.fill();
   context.fillStyle = "#2f8f4e";
   context.beginPath();
-  context.moveTo(fruit.x, fruit.y - 14);
-  context.lineTo(fruit.x - 12, fruit.y - 24);
-  context.lineTo(fruit.x + 12, fruit.y - 24);
+  context.moveTo(x, y - 14);
+  context.lineTo(x - 12, y - 24);
+  context.lineTo(x + 12, y - 24);
   context.closePath();
   context.fill();
 }
@@ -614,6 +609,10 @@ function roundedRect(x, y, w, h, r) {
   context.arcTo(x, y + h, x, y, radius);
   context.arcTo(x, y, x + w, y, radius);
   context.closePath();
+}
+
+function crisp(value) {
+  return Math.round(value);
 }
 
 function random(min, max) {
