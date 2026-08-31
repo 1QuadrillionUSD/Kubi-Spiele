@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.2.0";
+const CACHE_VERSION = "meine-spiele-v1.5.0";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [
@@ -21,7 +21,21 @@ const FILES_TO_CACHE = [
   "./games/autorennen/",
   "./games/autorennen/index.html",
   "./games/autorennen/style.css",
-  "./games/autorennen/game.js"
+  "./games/autorennen/game.js",
+  "./games/planetennamen/",
+  "./games/planetennamen/index.html",
+  "./games/planetennamen/style.css",
+  "./games/planetennamen/game.js",
+  "./games/planetennamen/assets/mercury-cutout.webp",
+  "./games/planetennamen/assets/venus-cutout.webp",
+  "./games/planetennamen/assets/earth-cutout.webp",
+  "./games/planetennamen/assets/moon-cutout.webp",
+  "./games/planetennamen/assets/mars-cutout.webp",
+  "./games/planetennamen/assets/jupiter-cutout.webp",
+  "./games/planetennamen/assets/saturn-cutout.webp",
+  "./games/planetennamen/assets/uranus-cutout.webp",
+  "./games/planetennamen/assets/neptune-cutout.webp",
+  "./games/planetennamen/assets/pluto-cutout.webp"
 ];
 
 const asCacheUrl = (path) => new URL(path, self.registration.scope).toString();

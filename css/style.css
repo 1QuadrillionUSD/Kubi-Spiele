@@ -110,6 +110,14 @@ h1 {
   touch-action: manipulation;
 }
 
+.planets-tile {
+  background:
+    radial-gradient(circle at 18% 25%, rgba(255, 255, 255, 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle at 76% 18%, rgba(255, 255, 255, 0.8) 0 1px, transparent 2px),
+    radial-gradient(circle at 58% 74%, rgba(255, 255, 255, 0.85) 0 1px, transparent 2px),
+    linear-gradient(145deg, #17234a, #2e2465 52%, #0b1027);
+}
+
 .game-tile:focus-visible,
 .game-tile:hover {
   border-color: var(--sun);
@@ -122,6 +130,109 @@ h1 {
   display: grid;
   place-items: center;
   padding: 26px;
+}
+
+.planet-tile-art {
+  overflow: hidden;
+}
+
+.mini-solar-system {
+  position: relative;
+  width: min(88%, 380px);
+  aspect-ratio: 1;
+}
+
+.mini-sun {
+  position: absolute;
+  left: 4%;
+  top: 42%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff2a6, #ffd45f 46%, #ff8f3d);
+  box-shadow: 0 0 46px rgba(255, 212, 95, 0.82);
+}
+
+.mini-orbit {
+  position: absolute;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+.orbit-one {
+  inset: 24% 12% 18% 9%;
+}
+
+.orbit-two {
+  inset: 13% 0 8% 0;
+}
+
+.orbit-three {
+  inset: 2% -16% -6% -12%;
+}
+
+.mini-planet {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.26);
+}
+
+.mini-planet.mercury {
+  left: 38%;
+  top: 47%;
+  width: 5%;
+  aspect-ratio: 1;
+  background: #ad9a7b;
+}
+
+.mini-planet.venus {
+  left: 49%;
+  top: 34%;
+  width: 8%;
+  aspect-ratio: 1;
+  background: #d99645;
+}
+
+.mini-planet.earth {
+  left: 59%;
+  top: 56%;
+  width: 8%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #2b79d3, #55c46d);
+}
+
+.mini-planet.mars {
+  left: 67%;
+  top: 23%;
+  width: 6.5%;
+  aspect-ratio: 1;
+  background: #c95b48;
+}
+
+.mini-planet.jupiter {
+  left: 72%;
+  top: 48%;
+  width: 17%;
+  aspect-ratio: 1;
+  background: linear-gradient(180deg, #d8b68e, #f3e0bf, #b87f5b);
+}
+
+.mini-planet.saturn {
+  left: 76%;
+  top: 72%;
+  width: 13%;
+  aspect-ratio: 1;
+  background: #eadca8;
+}
+
+.mini-planet.saturn::before {
+  content: "";
+  position: absolute;
+  inset: 36% -36%;
+  border: 3px solid rgba(237, 224, 173, 0.86);
+  border-radius: 50%;
+  transform: rotate(-16deg);
 }
 
 .road {

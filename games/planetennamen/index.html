@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111a3f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Planeten">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Planetennamen</title>
+    <link rel="manifest" href="../../manifest.webmanifest">
+    <link rel="apple-touch-icon" href="../../assets/icons/apple-touch-icon.png">
+    <link rel="icon" href="../../assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./game.js"></script>
+  </head>
+  <body>
+    <main class="space-page">
+      <header class="space-header">
+        <a class="home-button" href="../../" aria-label="Zur Spielesammlung">
+          <span aria-hidden="true">&#8962;</span>
+        </a>
+        <div>
+          <p>Sonnensystem</p>
+          <h1>Planetennamen</h1>
+        </div>
+      </header>
+
+      <section class="solar-stage" aria-label="Sonnensystem mit anklickbaren Planeten">
+        <div class="star-field" aria-hidden="true"></div>
+        <div class="orbit-system" id="orbit-system"></div>
+      </section>
+
+      <section class="planet-panel" id="planet-panel" aria-live="polite">
+        <button class="close-button" id="close-panel" type="button" aria-label="Detailansicht schliessen">&times;</button>
+        <img class="planet-photo" id="planet-photo" src="./assets/earth-cutout.webp" alt="Bild der Erde">
+        <div class="planet-copy">
+          <p class="kind" id="planet-kind">Planet</p>
+          <h2 id="planet-name">Erde</h2>
+          <div class="language-grid" id="planet-info"></div>
+          <p class="credit" id="planet-credit"></p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

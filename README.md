@@ -1,6 +1,6 @@
 # Meine Spiele
 
-Eine private, werbefreie Spielesammlung als Progressive Web App fuer iPad, Safari und GitHub Pages. Das erste enthaltene Spiel ist **Autorennen**, ein einfaches Sammelspiel mit Canvas, Touchsteuerung, Tastatursteuerung und lokalem Highscore.
+Eine private, werbefreie Spielesammlung als Progressive Web App fuer iPad, Safari und GitHub Pages. Enthalten sind **Autorennen**, ein einfaches Sammelspiel mit Canvas, Touchsteuerung, Tastatursteuerung und lokalem Highscore, sowie **Planetennamen**, eine kindgerechte Sonnensystem-Ansicht mit anklickbaren Himmelskoerpern.
 
 ## Lokal starten
 
@@ -35,10 +35,16 @@ meine-spiele/
 │   ├── images/
 │   └── sounds/
 └── games/
-    └── autorennen/
+    ├── autorennen/
+    └── planetennamen/
 ```
 
 Jedes Spiel liegt in einem eigenen Ordner unter `games/`. Gemeinsame Funktionen wie Highscore, PWA-Registrierung, Sound und Touch-Helfer liegen unter `shared/`.
+
+## Enthaltene Spiele
+
+- `games/autorennen/`: Sammelspiel mit Auto, Fruechten, Bomben und Mauern.
+- `games/planetennamen/`: Sonnensystem mit Merkur, Venus, Erde, Mond, Mars, Jupiter, Saturn, Uranus, Neptun und Pluto. Beim Antippen oeffnet sich ein grosses Bild mit zweisprachigen Basisinformationen auf Deutsch und Slowakisch zum Vorlesen.
 
 ## GitHub-Repository erstellen
 
@@ -105,3 +111,17 @@ Wenn du eine neue Version auslieferst, erhoehe in `service-worker.js` den Wert `
 ## Datenschutz
 
 Die App laedt keine externen Assets, verwendet keine Werbung, kein Tracking, keine Analytics, keine Cookies und keine Benutzerkonten. Der Highscore wird nur lokal auf dem jeweiligen Geraet in `localStorage` gespeichert.
+
+## Bildquellen
+
+Die Planeten- und Mondbilder liegen lokal im Repository. Sie stammen aus offiziellen NASA- und JPL-Quellen:
+
+- Merkur: NASA/JHUAPL/Carnegie Institution of Washington, MESSENGER.
+- Venus: NASA/JPL-Caltech, Magellan.
+- Erde: NASA Johnson Space Center, Apollo 17.
+- Mond: NASA / Lick Observatory.
+- Mars: NASA/JPL-Caltech, Viking.
+- Jupiter: NASA/ESA/CSA/STScI, Webb.
+- Saturn: NASA/ESA/STScI, Hubble.
+- Uranus und Neptun: NASA/JPL-Caltech, Voyager 2.
+- Pluto: NASA/JHUAPL/SwRI, New Horizons.
