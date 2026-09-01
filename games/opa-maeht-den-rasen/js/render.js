@@ -313,18 +313,21 @@ export function drawSwayingFoliage(ctx, time) {
 }
 
 export function drawCloudShadows(ctx, clouds) {
+  ctx.save();
   ctx.fillStyle = "rgba(23, 50, 77, 0.06)";
   for (const cloud of clouds) {
     ctx.beginPath();
     ctx.ellipse(cloud.x, cloud.y, cloud.width * 0.5, cloud.width * 0.28, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.restore();
 }
 
 export function drawCollectibles(ctx, collectibles, time) {
   ctx.font = "32px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  ctx.fillStyle = "#000";
   for (const item of collectibles) {
     const bob = Math.sin(time * 3 + item.bob) * 4;
     ctx.save();
@@ -337,6 +340,7 @@ export function drawCollectibles(ctx, collectibles, time) {
 export function drawWildlife(ctx, wildlife, time) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  ctx.fillStyle = "#000";
 
   ctx.font = "26px sans-serif";
   for (const bug of wildlife.ladybugs) {
@@ -354,11 +358,13 @@ export function drawWildlife(ctx, wildlife, time) {
     ctx.save();
     ctx.translate(butterfly.x, butterfly.y);
     ctx.scale(1, flutter);
+    ctx.fillStyle = "#000";
     ctx.fillText("🦋", 0, 0);
     ctx.restore();
   }
 
   ctx.font = "30px sans-serif";
+  ctx.fillStyle = "#000";
   for (const bird of wildlife.birds) {
     const bob = bird.state === "landed" ? Math.sin(bird.bob) * 1.5 : 0;
     ctx.fillText("🐦", bird.x, bird.y + bob);
