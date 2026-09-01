@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.6.3";
+const CACHE_VERSION = "meine-spiele-v1.7.1";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [
@@ -35,7 +35,18 @@ const FILES_TO_CACHE = [
   "./games/planetennamen/assets/saturn-cutout.webp",
   "./games/planetennamen/assets/uranus-cutout.webp",
   "./games/planetennamen/assets/neptune-cutout.webp",
-  "./games/planetennamen/assets/pluto-cutout.webp"
+  "./games/planetennamen/assets/pluto-cutout.webp",
+  "./games/opa-maeht-den-rasen/",
+  "./games/opa-maeht-den-rasen/index.html",
+  "./games/opa-maeht-den-rasen/style.css",
+  "./games/opa-maeht-den-rasen/js/main.js",
+  "./games/opa-maeht-den-rasen/js/world.js",
+  "./games/opa-maeht-den-rasen/js/render.js",
+  "./games/opa-maeht-den-rasen/js/wildlife.js",
+  "./games/opa-maeht-den-rasen/js/input.js",
+  "./games/opa-maeht-den-rasen/js/audio.js",
+  "./games/opa-maeht-den-rasen/js/characters.js",
+  "./games/opa-maeht-den-rasen/assets/characters/opa-face-placeholder.png"
 ];
 
 const asCacheUrl = (path) => new URL(path, self.registration.scope).toString();

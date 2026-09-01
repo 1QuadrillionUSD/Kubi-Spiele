@@ -1,6 +1,6 @@
 # Meine Spiele
 
-Eine private, werbefreie Spielesammlung als Progressive Web App für iPad, Safari und GitHub Pages. Enthalten sind **Autorennen**, ein einfaches Sammelspiel mit Canvas, Touchsteuerung, Tastatursteuerung und lokalem Highscore, sowie **Planetennamen**, eine kindgerechte Sonnensystem-Ansicht mit anklickbaren Himmelskörpern.
+Eine private, werbefreie Spielesammlung als Progressive Web App für iPad, Safari und GitHub Pages. Enthalten sind **Autorennen**, ein einfaches Sammelspiel mit Canvas, Touchsteuerung, Tastatursteuerung und lokalem Highscore, **Planetennamen**, eine kindgerechte Sonnensystem-Ansicht mit anklickbaren Himmelskörpern, sowie **Opa mäht den Rasen**, ein entspanntes Mäh- und Entdeckerspiel in einem liebevoll gestalteten Garten.
 
 ## Lokal starten
 
@@ -36,7 +36,10 @@ meine-spiele/
 │   └── sounds/
 └── games/
     ├── autorennen/
-    └── planetennamen/
+    ├── planetennamen/
+    └── opa-maeht-den-rasen/
+        ├── js/
+        └── assets/characters/
 ```
 
 Jedes Spiel liegt in einem eigenen Ordner unter `games/`. Gemeinsame Funktionen wie Highscore, PWA-Registrierung, Sound und Touch-Helfer liegen unter `shared/`.
@@ -45,6 +48,7 @@ Jedes Spiel liegt in einem eigenen Ordner unter `games/`. Gemeinsame Funktionen 
 
 - `games/autorennen/`: Sammelspiel mit Auto, Früchten, Bomben und Mauern.
 - `games/planetennamen/`: Sonnensystem mit Merkur, Venus, Erde, Mond, Mars, Jupiter, Saturn, Uranus, Neptun und Pluto. Beim Antippen öffnet sich ein großes Bild mit zweisprachigen Basisinformationen auf Deutsch und Slowakisch zum Vorlesen.
+- `games/opa-maeht-den-rasen/`: Opa hilft im Garten – der Spieler mäht mit ihm zusammen hohes Gras zu einem gepflegten Rasen, sammelt dabei gelegentlich Blumen, Früchte und Sterne ein und trifft auf Schmetterlinge, Marienkäfer, Bienen und Vögel. Ohne Zeitdruck, ohne Gegner, ohne Verlieren. Opas Gesicht ist als austauschbarer Platzhalter angelegt, siehe `assets/characters/opa-face-placeholder.png` in diesem Spielordner.
 
 ## GitHub-Repository erstellen
 
@@ -98,6 +102,18 @@ Danach startet die Spielesammlung vom Home-Bildschirm aus im Standalone-Modus. N
 3. Nutze bei Bedarf gemeinsame Helfer aus `shared/`, zum Beispiel `shared/utils/highscore.js`.
 4. Füge auf der Startseite in `index.html` eine neue Kachel hinzu.
 5. Ergänze die neuen Dateien in `service-worker.js` in `FILES_TO_CACHE`, damit das Spiel offline verfügbar wird.
+
+## Echtes Foto für Opa einsetzen
+
+In `games/opa-maeht-den-rasen/` ist die Spielfigur bewusst ohne festes Gesicht gebaut. Ersetze einfach diese eine Datei durch ein echtes Foto (quadratisch, am besten mindestens 400×400 px):
+
+```text
+games/opa-maeht-den-rasen/assets/characters/opa-face-placeholder.png
+```
+
+Keine weiteren Codeänderungen nötig – das Spiel schneidet das Foto automatisch rund aus und zeigt es als Kopf der Figur. Fehlt die Datei oder lädt sie nicht, wird automatisch ein gezeichnetes Ersatzgesicht angezeigt.
+
+Weitere Familienmitglieder lassen sich auf dieselbe Weise vorbereiten: In `games/opa-maeht-den-rasen/js/characters.js` steht dafür `FACE_SOURCES`, eine Zuordnung von Namen zu Bilddateien. Ergänze dort z. B. `oma`, `mama` oder `papa` mit eigenem Dateipfad, sobald diese Figuren im Spiel gebraucht werden.
 
 ## PWA- und Offline-Dateien
 

@@ -108,6 +108,7 @@ h1 {
   outline: none;
   transform: translateZ(0);
   touch-action: manipulation;
+  container-type: inline-size;
 }
 
 .planets-tile {
@@ -247,6 +248,99 @@ h1 {
   transform: rotate(-16deg);
 }
 
+.garden-tile {
+  background: linear-gradient(145deg, #fff3b0, #8fd858 55%, #3f9a4c);
+}
+
+.mini-garden {
+  position: relative;
+  width: min(88%, 380px);
+  aspect-ratio: 1;
+}
+
+.mini-garden-sun {
+  position: absolute;
+  right: 6%;
+  top: 6%;
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff7bb, #ffd45f 55%, #ff9d3d);
+  box-shadow: 0 0 30px rgba(255, 212, 95, 0.7);
+}
+
+.mini-lawn-high {
+  position: absolute;
+  inset: 30% 6% 6% 6%;
+  border-radius: 34px;
+  background: repeating-linear-gradient(90deg, #2f8f4e 0 18px, #37a057 18px 36px);
+}
+
+.mini-lawn-mowed {
+  position: absolute;
+  left: 6%;
+  bottom: 6%;
+  width: 58%;
+  height: 46%;
+  background: repeating-linear-gradient(90deg, #9be878 0 16px, #8adf68 16px 32px);
+  clip-path: polygon(0 0, 100% 24%, 100% 100%, 0 100%);
+  border-radius: 0 0 0 34px;
+}
+
+.mini-flower {
+  position: absolute;
+  width: 7%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px #ffd84d inset;
+}
+
+.mini-flower.f1 {
+  left: 14%;
+  bottom: 16%;
+  background: #ff8fb1;
+}
+
+.mini-flower.f2 {
+  left: 30%;
+  bottom: 30%;
+  background: #ffd84d;
+}
+
+.mini-flower.f3 {
+  left: 22%;
+  bottom: 44%;
+  background: #ffffff;
+}
+
+.mini-mower {
+  position: absolute;
+  left: 44%;
+  bottom: 32%;
+  width: 20%;
+  height: 14%;
+  border-radius: 10px;
+  background: #e8532f;
+  box-shadow: 0 6px 0 rgba(23, 50, 77, 0.2);
+}
+
+.mini-mower-wheel {
+  position: absolute;
+  bottom: -22%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #2b2f36;
+}
+
+.mini-mower-wheel.w1 {
+  left: 4%;
+}
+
+.mini-mower-wheel.w2 {
+  right: 4%;
+}
+
 .road {
   position: relative;
   width: min(62%, 340px);
@@ -355,11 +449,17 @@ h1 {
 .tile-title {
   display: block;
   color: white;
-  font-size: clamp(1.8rem, 7vw, 3.6rem);
+  font-size: clamp(1.6rem, 7vw, 3.6rem);
   font-weight: 1000;
   line-height: 0.95;
   text-shadow: 0 5px 18px rgba(23, 50, 77, 0.26);
   overflow-wrap: break-word;
+}
+
+@supports (width: 1cqw) {
+  .tile-title {
+    font-size: clamp(1.6rem, 13cqw, 3.6rem);
+  }
 }
 
 .tile-badge {
