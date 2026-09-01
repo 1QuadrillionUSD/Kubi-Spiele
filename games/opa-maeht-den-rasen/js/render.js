@@ -8,7 +8,7 @@ import {
   PATH_RECT,
   getFlowerBorderSpots,
 } from "./world.js";
-import { drawFace } from "./characters.js";
+import { drawHead } from "./characters.js";
 
 export function createGroundLayer(grid) {
   const canvas = document.createElement("canvas");
@@ -420,16 +420,7 @@ export function drawOpa(ctx, opa, time, isMoving) {
   ctx.closePath();
   ctx.fill();
 
-  const headRadius = 30;
-  const headY = -46;
-
-  drawFace(ctx, "opa", 0, headY, headRadius);
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(0, headY, headRadius - 1, 0, Math.PI * 2);
-  ctx.stroke();
+  drawHead(ctx, "opa", 0, -12, 64);
 
   ctx.restore();
   ctx.restore();

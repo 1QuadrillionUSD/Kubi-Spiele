@@ -105,13 +105,13 @@ Danach startet die Spielesammlung vom Home-Bildschirm aus im Standalone-Modus. N
 
 ## Echtes Foto für Opa einsetzen
 
-In `games/opa-maeht-den-rasen/` ist die Spielfigur bewusst ohne festes Gesicht gebaut. Ersetze einfach diese eine Datei durch ein echtes Foto (quadratisch, am besten mindestens 400×400 px):
+In `games/opa-maeht-den-rasen/` ist die Spielfigur bewusst ohne festes Gesicht gebaut. Ersetze einfach diese eine Datei durch ein echtes Foto:
 
 ```text
 games/opa-maeht-den-rasen/assets/characters/opa-face-placeholder.png
 ```
 
-Keine weiteren Codeänderungen nötig – das Spiel schneidet das Foto automatisch rund aus und zeigt es als Kopf der Figur. Fehlt die Datei oder lädt sie nicht, wird automatisch ein gezeichnetes Ersatzgesicht angezeigt.
+Wichtig: Diese Datei muss ein **freigestelltes PNG mit transparentem Hintergrund** sein (Kopf bis knapp unter das Kinn, Hintergrund entfernt) – kein normales Rechteck-Foto. Das Spiel zeichnet die Datei nämlich unverändert auf die Figur, ohne eigenen Rahmen oder Kreis; ein Foto mit sichtbarem Hintergrund würde daher als Rechteck über der Figur schweben. Hintergrund entfernen geht z. B. kostenlos online (Suche nach "Hintergrund entfernen") oder lokal mit dem Python-Tool `rembg`. Danach reicht es, das Ergebnis knapp um den Kopf zuzuschneiden und unter obigem Dateinamen zu speichern – keine weiteren Codeänderungen nötig. Fehlt die Datei oder lädt sie nicht, wird automatisch ein gezeichnetes Ersatzgesicht angezeigt.
 
 Weitere Familienmitglieder lassen sich auf dieselbe Weise vorbereiten: In `games/opa-maeht-den-rasen/js/characters.js` steht dafür `FACE_SOURCES`, eine Zuordnung von Namen zu Bilddateien. Ergänze dort z. B. `oma`, `mama` oder `papa` mit eigenem Dateipfad, sobald diese Figuren im Spiel gebraucht werden.
 

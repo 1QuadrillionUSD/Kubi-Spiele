@@ -16,27 +16,29 @@ export function getFaceImage(characterId) {
   return image;
 }
 
-export function drawFace(ctx, characterId, cx, cy, radius) {
+/**
+ * Draws a character's head image directly (no clipping) so the natural,
+ * pre-cut silhouette of the photo (background already removed) shows
+ * through as-is. The image is anchored by its bottom-center point, which
+ * should line up with the neck of the body illustration.
+ */
+export function drawHead(ctx, characterId, cx, bottomY, targetWidth) {
   const image = getFaceImage(characterId);
 
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-  ctx.clip();
-
   if (image && image.complete && image.naturalWidth > 0) {
-    const scale = Math.max((radius * 2) / image.naturalWidth, (radius * 2) / image.naturalHeight);
-    const w = image.naturalWidth * scale;
+    const scale = targetWidth / image.naturalWidth;
+    const w = targetWidth;
     const h = image.naturalHeight * scale;
-    ctx.drawImage(image, cx - w / 2, cy - h / 2, w, h);
+    ctx.drawImage(image, cx - w / 2, bottomY - h, w, h);
   } else {
-    drawFallbackFace(ctx, cx, cy, radius);
+    drawFallbackHead(ctx, cx, bottomY, targetWidth);
   }
-
-  ctx.restore();
 }
 
-function drawFallbackFace(ctx, cx, cy, radius) {
+function drawFallbackHead(ctx, cx, bottomY, targetWidth) {
+  const radius = targetWidth / 2;
+  const cy = bottomY - radius;
+
   ctx.fillStyle = "#f6c8a0";
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
