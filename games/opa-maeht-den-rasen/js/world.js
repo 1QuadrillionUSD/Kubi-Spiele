@@ -9,9 +9,8 @@ export const GRASS_HIGH = 1;
 export const GRASS_MOWED = 2;
 
 const LAWN_REGIONS = [
-  { x: 100, y: 100, w: 900, h: 520 },
-  { x: 1180, y: 100, w: 920, h: 560 },
-  { x: 100, y: 980, w: 2000, h: 460 },
+  { x: 100, y: 100, w: 820, h: 480 },
+  { x: 1180, y: 100, w: 840, h: 500 },
 ];
 
 export const PATH_RECT = { x: 1030, y: 40, w: 120, h: 1420 };
@@ -48,6 +47,17 @@ export const DECORATIONS = [
 
   { type: "flowerbed", x: 130, y: 700, w: 220, h: 60, kind: "tulips" },
   { type: "flowerbed", x: 1750, y: 900, w: 260, h: 60, kind: "daisies" },
+
+  { type: "pond", x: 700, y: 1180, rx: 150, ry: 88 },
+  { type: "bench", x: 900, y: 1240, w: 140, h: 48, rotation: 0.06 },
+  { type: "birdhouse", x: 1650, y: 1180, excludeRadius: 40 },
+  { type: "stone", x: 640, y: 1260, r: 18 },
+  { type: "stone", x: 670, y: 1235, r: 14 },
+  { type: "stone", x: 610, y: 1270, r: 12 },
+  { type: "flowerbed", x: 1420, y: 1150, w: 280, h: 80, kind: "mixed" },
+  { type: "bush", x: 1750, y: 1260, r: 28 },
+  { type: "bush", x: 300, y: 1280, r: 26 },
+  { type: "bush", x: 1900, y: 1150, r: 30 },
 ];
 
 const FLOWER_BORDER = { y: 46, height: 44, marginX: 130 };

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.8.2";
+const CACHE_VERSION = "meine-spiele-v1.9.2";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [
@@ -46,7 +46,12 @@ const FILES_TO_CACHE = [
   "./games/opa-maeht-den-rasen/js/input.js",
   "./games/opa-maeht-den-rasen/js/audio.js",
   "./games/opa-maeht-den-rasen/js/characters.js",
-  "./games/opa-maeht-den-rasen/assets/characters/opa-face-placeholder.png"
+  "./games/opa-maeht-den-rasen/assets/characters/opa-face-placeholder.png",
+  "./games/oma-backt-den-kuchen/",
+  "./games/oma-backt-den-kuchen/index.html",
+  "./games/oma-backt-den-kuchen/style.css",
+  "./games/oma-backt-den-kuchen/game.js",
+  "./games/oma-backt-den-kuchen/assets/characters/oma-face-placeholder.png"
 ];
 
 const asCacheUrl = (path) => new URL(path, self.registration.scope).toString();

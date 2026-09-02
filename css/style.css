@@ -26,7 +26,9 @@ body {
 
 body {
   min-height: 100svh;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   background:
     linear-gradient(180deg, rgba(113, 201, 237, 0.48), rgba(248, 243, 232, 0.96) 48%),
     var(--bg);
@@ -339,6 +341,83 @@ h1 {
 
 .mini-mower-wheel.w2 {
   right: 4%;
+}
+
+.kitchen-tile {
+  background: linear-gradient(145deg, #ffe6b8, #f4b562 52%, #e2574c);
+}
+
+.mini-kitchen {
+  position: relative;
+  width: min(88%, 380px);
+  aspect-ratio: 1;
+}
+
+.mini-kitchen-sun {
+  position: absolute;
+  right: 8%;
+  top: 8%;
+  width: 20%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff7bb, #ffd45f 55%, #ff9d3d);
+  box-shadow: 0 0 28px rgba(255, 212, 95, 0.7);
+}
+
+.mini-bowl {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  width: 62%;
+  height: 26%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #ffffff, #e2e2e2);
+  border-radius: 0 0 999px 999px / 0 0 70% 70%;
+  box-shadow: 0 10px 0 rgba(23, 50, 77, 0.18);
+}
+
+.mini-bowl::before {
+  content: "";
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  top: -14%;
+  height: 30%;
+  border-radius: 50%;
+  background: #fffefa;
+  box-shadow: inset 0 6px 10px rgba(23, 50, 77, 0.12);
+}
+
+.ingredient-drop {
+  position: absolute;
+  box-shadow: 0 8px 12px rgba(23, 50, 77, 0.18);
+}
+
+.ingredient-drop.egg {
+  left: 26%;
+  top: 20%;
+  width: 30px;
+  height: 40px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: #fff8e6;
+}
+
+.ingredient-drop.milk {
+  right: 22%;
+  top: 12%;
+  width: 30px;
+  height: 38px;
+  border-radius: 6px 6px 10px 10px;
+  background: linear-gradient(180deg, #fffefa 0 60%, #5fb8e0 60% 100%);
+}
+
+.ingredient-drop.choco {
+  right: 30%;
+  top: 42%;
+  width: 26px;
+  height: 22px;
+  border-radius: 6px;
+  background: #7a4a2d;
 }
 
 .road {
