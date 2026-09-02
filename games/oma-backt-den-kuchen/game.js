@@ -10,20 +10,30 @@ const context = canvas.getContext("2d");
 const startPanel = document.querySelector("#start-panel");
 const hintText = document.querySelector("#hint-text");
 
-const TARGET_CAUGHT = 15;
+const TARGET_CAUGHT = 30;
 const MAX_MISSES = 6;
 
 const INGREDIENT_TYPES = [
-  { kind: "egg", radius: 20 },
-  { kind: "milk", radius: 22 },
-  { kind: "flour", radius: 23 },
-  { kind: "sugar", radius: 23 },
-  { kind: "butter", radius: 20 },
-  { kind: "chocolate", radius: 20 },
+  { kind: "egg", radius: 40 },
+  { kind: "milk", radius: 44 },
+  { kind: "flour", radius: 46 },
+  { kind: "sugar", radius: 46 },
+  { kind: "butter", radius: 40 },
+  { kind: "chocolate", radius: 40 },
+];
+
+const MESS_SPLAT_LAYOUT = [
+  { xf: 0.12, yf: 0.2, scale: 1.05, rot: -0.2 },
+  { xf: 0.84, yf: 0.16, scale: 0.85, rot: 0.3 },
+  { xf: 0.26, yf: 0.5, scale: 1.25, rot: 0.1 },
+  { xf: 0.7, yf: 0.6, scale: 0.95, rot: -0.35 },
+  { xf: 0.46, yf: 0.3, scale: 0.8, rot: 0.5 },
+  { xf: 0.92, yf: 0.46, scale: 1.1, rot: -0.15 },
+  { xf: 0.06, yf: 0.62, scale: 0.9, rot: 0.4 },
 ];
 
 const headImage = new Image();
-headImage.src = new URL("./assets/characters/oma-face-placeholder.png", import.meta.url).href;
+headImage.src = new URL("./assets/characters/oma-head-cutout.png", import.meta.url).href;
 
 let state = GameState.READY;
 let outcome = null;
@@ -307,7 +317,7 @@ function endGame(result) {
 
 function spawnIngredient() {
   const type = INGREDIENT_TYPES[Math.floor(Math.random() * INGREDIENT_TYPES.length)];
-  const margin = Math.max(30, stage.width * 0.12);
+  const margin = Math.max(type.radius + 12, stage.width * 0.14);
   ingredients.push({
     ...type,
     x: random(stage.x + margin, stage.x + stage.width - margin),
@@ -348,8 +358,9 @@ function draw() {
     drawMessScene();
   } else {
     drawFloorSplats();
-    drawIngredients();
+    drawCakeProgress();
     drawOma();
+    drawIngredients();
   }
 
   drawPopups();
@@ -362,32 +373,22 @@ function draw() {
 
 function drawBackground() {
   const gradient = context.createLinearGradient(0, 0, 0, floorY);
-  gradient.addColorStop(0, "#fff6e6");
-  gradient.addColorStop(1, "#ffe6b8");
+  gradient.addColorStop(0, "#eef7ec");
+  gradient.addColorStop(1, "#fdebc9");
   context.fillStyle = gradient;
   context.fillRect(0, 0, width, floorY);
 
-  const winW = Math.min(120, width * 0.24);
-  const winH = winW * 0.8;
-  const winX = width - winW - 22;
-  const winY = 22;
-  context.fillStyle = "#bfe8fb";
-  roundedRect(winX, winY, winW, winH, 14);
-  context.fill();
-  context.fillStyle = "#ffd45f";
-  context.beginPath();
-  context.arc(winX + winW * 0.32, winY + winH * 0.38, winW * 0.14, 0, Math.PI * 2);
-  context.fill();
-  context.strokeStyle = "rgba(255, 254, 250, 0.9)";
-  context.lineWidth = 5;
-  context.beginPath();
-  context.moveTo(winX + winW / 2, winY);
-  context.lineTo(winX + winW / 2, winY + winH);
-  context.moveTo(winX, winY + winH / 2);
-  context.lineTo(winX + winW, winY + winH / 2);
-  context.stroke();
-  roundedRect(winX, winY, winW, winH, 14);
-  context.stroke();
+  const counterHeight = Math.max(50, height * 0.16);
+  const counterTopY = floorY - counterHeight;
+  const bandHeight = Math.min(150, counterTopY * 0.6);
+  const bandTop = counterTopY - bandHeight;
+
+  drawBacksplash(bandTop, bandHeight, counterTopY);
+
+  const win = getWindowGeometry(bandTop);
+  drawUpperCabinets(bandTop, bandHeight, win);
+  drawWindow(win);
+  drawCounter(counterTopY, counterHeight);
 
   context.fillStyle = "#f4d9a6";
   context.fillRect(0, floorY, width, height - floorY);
@@ -413,6 +414,192 @@ function drawBackground() {
   context.stroke();
 }
 
+function drawBacksplash(bandTop, bandHeight, counterTopY) {
+  context.fillStyle = "#eaf3f6";
+  context.fillRect(0, bandTop, width, bandHeight);
+  context.strokeStyle = "rgba(23, 50, 77, 0.1)";
+  context.lineWidth = 1;
+  const tile = 24;
+  for (let gx = 0; gx < width; gx += tile) {
+    context.beginPath();
+    context.moveTo(crisp(gx), bandTop);
+    context.lineTo(crisp(gx), counterTopY);
+    context.stroke();
+  }
+  for (let gy = bandTop; gy < counterTopY; gy += tile) {
+    context.beginPath();
+    context.moveTo(0, crisp(gy));
+    context.lineTo(width, crisp(gy));
+    context.stroke();
+  }
+}
+
+function drawCounter(counterTopY, counterHeight) {
+  context.fillStyle = "#c98a4b";
+  context.fillRect(0, counterTopY, width, counterHeight);
+  context.fillStyle = "#fff1da";
+  context.fillRect(0, counterTopY, width, Math.max(6, counterHeight * 0.12));
+
+  context.strokeStyle = "rgba(90, 58, 35, 0.35)";
+  context.lineWidth = 2;
+  const doorWidth = Math.max(70, width / 6);
+  for (let x = doorWidth / 2; x < width; x += doorWidth) {
+    context.beginPath();
+    context.moveTo(crisp(x), counterTopY + counterHeight * 0.18);
+    context.lineTo(crisp(x), floorY - 4);
+    context.stroke();
+    context.fillStyle = "#5a3a23";
+    context.beginPath();
+    context.arc(x - doorWidth * 0.18, counterTopY + counterHeight * 0.55, 3, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function drawUpperCabinets(bandTop, bandHeight, win) {
+  const cabHeight = bandHeight * 0.82;
+  const cabTop = bandTop + (bandHeight - cabHeight) / 2;
+  const gap = Math.max(6, width * 0.015);
+  const edgePad = 6;
+
+  drawCabinetRow(edgePad, win.winX - gap, cabTop, cabHeight, 2, gap);
+  drawCabinetRow(win.winX + win.winW + gap, width - edgePad, cabTop, cabHeight, 2, gap);
+}
+
+function drawCabinetRow(startX, endX, y, h, count, gap) {
+  const available = endX - startX;
+  if (available < 30) return;
+  const totalGap = gap * (count - 1);
+  const w = Math.max(30, (available - totalGap) / count);
+  for (let i = 0; i < count; i += 1) {
+    const x = startX + i * (w + gap);
+    drawCabinetBox(x, y, w, h);
+  }
+}
+
+function drawCabinetBox(x, y, w, h) {
+  context.fillStyle = "#e0b073";
+  roundedRect(x, y, w, h, Math.min(10, w * 0.08));
+  context.fill();
+  context.strokeStyle = "rgba(90, 58, 35, 0.4)";
+  context.lineWidth = 2;
+  roundedRect(x, y, w, h, Math.min(10, w * 0.08));
+  context.stroke();
+  context.beginPath();
+  context.moveTo(x + w / 2, y + h * 0.08);
+  context.lineTo(x + w / 2, y + h * 0.92);
+  context.stroke();
+  context.fillStyle = "#7a4a2d";
+  const knobR = Math.max(2.5, w * 0.035);
+  context.beginPath();
+  context.arc(x + w / 2 - w * 0.09, y + h / 2, knobR, 0, Math.PI * 2);
+  context.arc(x + w / 2 + w * 0.09, y + h / 2, knobR, 0, Math.PI * 2);
+  context.fill();
+}
+
+function getWindowGeometry(bandTop) {
+  const winW = Math.min(190, width * 0.4);
+  const winY = Math.max(16, height * 0.05);
+  const winH = Math.min(winW * 0.78, Math.max(40, height * 0.3), Math.max(40, bandTop - winY - 20));
+  const winX = (width - winW) / 2;
+  return { winW, winH, winX, winY };
+}
+
+function drawWindow(win) {
+  const { winW, winH, winX, winY } = win;
+
+  context.fillStyle = "#fffefa";
+  roundedRect(winX - 8, winY - 8, winW + 16, winH + 16, 12);
+  context.fill();
+
+  context.fillStyle = "#bfe8fb";
+  roundedRect(winX, winY, winW, winH, 10);
+  context.fill();
+  context.fillStyle = "#ffd45f";
+  context.beginPath();
+  context.arc(winX + winW * 0.28, winY + winH * 0.32, winW * 0.11, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "rgba(120, 190, 120, 0.55)";
+  context.beginPath();
+  context.arc(winX + winW * 0.72, winY + winH * 0.95, winW * 0.24, Math.PI, 0);
+  context.fill();
+
+  context.strokeStyle = "rgba(255, 254, 250, 0.95)";
+  context.lineWidth = 6;
+  context.beginPath();
+  context.moveTo(winX + winW / 2, winY);
+  context.lineTo(winX + winW / 2, winY + winH);
+  context.moveTo(winX, winY + winH / 2);
+  context.lineTo(winX + winW, winY + winH / 2);
+  context.stroke();
+
+  context.strokeStyle = "rgba(23, 50, 77, 0.25)";
+  context.lineWidth = 3;
+  roundedRect(winX, winY, winW, winH, 10);
+  context.stroke();
+
+  context.fillStyle = "rgba(226, 87, 76, 0.65)";
+  context.beginPath();
+  context.moveTo(winX - 6, winY - 10);
+  context.quadraticCurveTo(winX + winW * 0.1, winY + winH * 0.5, winX + 4, winY + winH + 6);
+  context.lineTo(winX - 14, winY + winH + 6);
+  context.lineTo(winX - 14, winY - 10);
+  context.closePath();
+  context.fill();
+  context.beginPath();
+  context.moveTo(winX + winW + 6, winY - 10);
+  context.quadraticCurveTo(winX + winW * 0.9, winY + winH * 0.5, winX + winW - 4, winY + winH + 6);
+  context.lineTo(winX + winW + 14, winY + winH + 6);
+  context.lineTo(winX + winW + 14, winY - 10);
+  context.closePath();
+  context.fill();
+}
+
+function drawCakeProgress() {
+  const progress = Math.min(1, caught / TARGET_CAUGHT);
+  if (progress <= 0) return;
+
+  const standWidth = Math.min(64, Math.max(40, stage.width * 0.13));
+  const standX = stage.x + standWidth * 0.75;
+  const baseY = floorY - 4;
+  const maxHeight = Math.min(150, height * 0.26);
+  const cakeHeight = maxHeight * progress;
+
+  context.fillStyle = "rgba(23, 50, 77, 0.18)";
+  context.beginPath();
+  context.ellipse(standX, baseY + 4, standWidth * 0.62, 6, 0, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#e7c48a";
+  roundedRect(standX - standWidth * 0.58, baseY - 8, standWidth * 1.16, 10, 4);
+  context.fill();
+
+  context.fillStyle = "#f6d9a6";
+  roundedRect(standX - standWidth / 2, baseY - 8 - cakeHeight, standWidth, cakeHeight, 8);
+  context.fill();
+
+  context.strokeStyle = "rgba(122, 74, 45, 0.3)";
+  context.lineWidth = 2;
+  for (let ly = baseY - 8 - 24; ly > baseY - 8 - cakeHeight + 6; ly -= 24) {
+    context.beginPath();
+    context.moveTo(standX - standWidth / 2 + 4, ly);
+    context.lineTo(standX + standWidth / 2 - 4, ly);
+    context.stroke();
+  }
+
+  if (cakeHeight > 12) {
+    context.fillStyle = "#fff1da";
+    roundedRect(standX - standWidth / 2, baseY - 8 - cakeHeight - 8, standWidth, 10, 5);
+    context.fill();
+  }
+
+  if (progress >= 0.85) {
+    context.fillStyle = "#b5233a";
+    context.beginPath();
+    context.arc(standX, baseY - 8 - cakeHeight - 14, 6, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
 function drawFloorSplats() {
   for (const splat of splats) {
     const alpha = Math.max(0, Math.min(1, splat.life / splat.maxLife));
@@ -423,26 +610,26 @@ function drawFloorSplats() {
     if (splat.kind === "egg") {
       context.fillStyle = "#fff6d8";
       context.beginPath();
-      context.ellipse(x, y, 26, 10, 0, 0, Math.PI * 2);
+      context.ellipse(x, y, 48, 18, 0, 0, Math.PI * 2);
       context.fill();
       context.fillStyle = "#ffcf4d";
       context.beginPath();
-      context.arc(x, y, 7, 0, Math.PI * 2);
+      context.arc(x, y, 13, 0, Math.PI * 2);
       context.fill();
     } else if (splat.kind === "milk") {
       context.fillStyle = "rgba(255, 255, 255, 0.92)";
       context.beginPath();
-      context.ellipse(x, y, 28, 11, 0, 0, Math.PI * 2);
+      context.ellipse(x, y, 52, 20, 0, 0, Math.PI * 2);
       context.fill();
     } else if (splat.kind === "flour" || splat.kind === "sugar") {
       context.fillStyle = "rgba(255, 255, 255, 0.85)";
       context.beginPath();
-      context.ellipse(x, y, 24, 10, 0, 0, Math.PI * 2);
+      context.ellipse(x, y, 44, 18, 0, 0, Math.PI * 2);
       context.fill();
     } else {
       context.fillStyle = "rgba(90, 58, 35, 0.35)";
       context.beginPath();
-      context.ellipse(x, y, 20, 8, 0, 0, Math.PI * 2);
+      context.ellipse(x, y, 38, 15, 0, 0, Math.PI * 2);
       context.fill();
     }
 
@@ -454,8 +641,8 @@ function drawIngredients() {
   for (const item of ingredients) {
     if (item.kind === "egg") drawEgg(item);
     else if (item.kind === "milk") drawMilk(item);
-    else if (item.kind === "flour") drawBag(item, "#fdf6e3", "#d8bd86");
-    else if (item.kind === "sugar") drawBag(item, "#ffffff", "#bcd6e8");
+    else if (item.kind === "flour") drawBag(item, "#fdf6e3", "#d8bd86", "MEHL");
+    else if (item.kind === "sugar") drawBag(item, "#ffffff", "#bcd6e8", "ZUCKER");
     else if (item.kind === "butter") drawButter(item);
     else if (item.kind === "chocolate") drawChocolate(item);
   }
@@ -467,10 +654,16 @@ function drawEgg(item) {
   context.save();
   context.translate(x, y);
   context.rotate(Math.sin(item.spin) * 0.15);
-  context.fillStyle = "#fff8e6";
+  const grad = context.createRadialGradient(-item.radius * 0.2, -item.radius * 0.3, item.radius * 0.1, 0, 0, item.radius * 1.1);
+  grad.addColorStop(0, "#fffdf5");
+  grad.addColorStop(1, "#f3dfae");
+  context.fillStyle = grad;
   context.beginPath();
   context.ellipse(0, 0, item.radius * 0.72, item.radius, 0, 0, Math.PI * 2);
   context.fill();
+  context.strokeStyle = "rgba(150, 110, 40, 0.25)";
+  context.lineWidth = 1.5;
+  context.stroke();
   context.fillStyle = "rgba(255, 255, 255, 0.85)";
   context.beginPath();
   context.ellipse(-item.radius * 0.22, -item.radius * 0.35, item.radius * 0.18, item.radius * 0.28, 0, 0, Math.PI * 2);
@@ -482,28 +675,40 @@ function drawMilk(item) {
   const x = crisp(item.x);
   const y = crisp(item.y);
   const w = item.radius * 1.3;
-  const h = item.radius * 1.8;
+  const h = item.radius * 1.9;
   context.save();
   context.translate(x, y);
-  context.rotate(Math.sin(item.spin) * 0.12);
+  context.rotate(Math.sin(item.spin) * 0.1);
+
   context.fillStyle = "#fffefa";
   context.beginPath();
-  context.moveTo(-w / 2, -h / 2 + 8);
+  context.moveTo(-w / 2, -h / 2 + 10);
   context.lineTo(-w / 2, h / 2);
   context.lineTo(w / 2, h / 2);
-  context.lineTo(w / 2, -h / 2 + 8);
-  context.lineTo(0, -h / 2 - 6);
+  context.lineTo(w / 2, -h / 2 + 10);
+  context.lineTo(0, -h / 2 - 8);
   context.closePath();
   context.fill();
-  context.fillStyle = "#5fb8e0";
-  context.fillRect(-w / 2, -h * 0.05, w, h * 0.28);
   context.strokeStyle = "rgba(23, 50, 77, 0.25)";
   context.lineWidth = 2;
   context.stroke();
+
+  context.fillStyle = "#3f8fc4";
+  context.fillRect(-w / 2, -h * 0.06, w, h * 0.24);
+  context.fillStyle = "#fffefa";
+  context.font = `900 ${Math.round(item.radius * 0.34)}px ui-rounded, system-ui, sans-serif`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText("MILCH", 0, h * 0.06);
+
+  context.fillStyle = "#a9d4ec";
+  roundedRect(-w * 0.14, -h / 2 - 8, w * 0.28, 10, 3);
+  context.fill();
+
   context.restore();
 }
 
-function drawBag(item, color, stripe) {
+function drawBag(item, color, stripe, label) {
   const x = crisp(item.x);
   const y = crisp(item.y);
   const w = item.radius * 1.55;
@@ -524,14 +729,20 @@ function drawBag(item, color, stripe) {
   context.beginPath();
   context.arc(0, -h / 2 + 2, 6, 0, Math.PI * 2);
   context.fill();
+
+  context.fillStyle = "rgba(23, 50, 77, 0.55)";
+  context.font = `900 ${Math.round(item.radius * 0.3)}px ui-rounded, system-ui, sans-serif`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(label, 0, h * 0.14);
   context.restore();
 }
 
 function drawButter(item) {
   const x = crisp(item.x);
   const y = crisp(item.y);
-  const w = item.radius * 1.7;
-  const h = item.radius * 1.1;
+  const w = item.radius * 1.8;
+  const h = item.radius * 1.15;
   context.save();
   context.translate(x, y);
   context.rotate(Math.sin(item.spin) * 0.14);
@@ -546,6 +757,11 @@ function drawButter(item) {
   context.moveTo(w / 2 - 8, -h / 2);
   context.lineTo(w / 2 - 8, h / 2);
   context.stroke();
+  context.fillStyle = "rgba(23, 50, 77, 0.5)";
+  context.font = `900 ${Math.round(item.radius * 0.26)}px ui-rounded, system-ui, sans-serif`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText("BUTTER", 0, 0);
   context.restore();
 }
 
@@ -553,7 +769,7 @@ function drawChocolate(item) {
   const x = crisp(item.x);
   const y = crisp(item.y);
   const w = item.radius * 1.6;
-  const h = item.radius * 1.3;
+  const h = item.radius * 1.35;
   context.save();
   context.translate(x, y);
   context.rotate(Math.sin(item.spin) * 0.16);
@@ -568,6 +784,11 @@ function drawChocolate(item) {
   context.moveTo(-w / 2, 0);
   context.lineTo(w / 2, 0);
   context.stroke();
+  context.fillStyle = "rgba(255, 241, 218, 0.9)";
+  context.font = `900 ${Math.round(item.radius * 0.24)}px ui-rounded, system-ui, sans-serif`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText("SCHOKO", 0, -h * 0.32);
   context.restore();
 }
 
@@ -643,9 +864,8 @@ function drawBowl(cx, feetY, w, h) {
 
 function drawHead(cx, bottomY, targetWidth) {
   if (headImage.complete && headImage.naturalWidth > 0) {
-    const scale = targetWidth / headImage.naturalWidth;
     const w = targetWidth;
-    const h = headImage.naturalHeight * scale;
+    const h = (headImage.naturalHeight / headImage.naturalWidth) * w;
     context.drawImage(headImage, cx - w / 2, bottomY - h, w, h);
   } else {
     drawFallbackHead(cx, bottomY, targetWidth);
@@ -731,8 +951,55 @@ function drawCake(cx, baseY, size) {
 }
 
 function drawMessScene() {
+  drawBigEggSplats();
   drawFloorMess();
   drawOmaSitting(width * 0.5);
+}
+
+function drawBigEggSplats() {
+  for (const spot of MESS_SPLAT_LAYOUT) {
+    drawBigEggSplat(width * spot.xf, height * spot.yf, Math.min(width, height) * 0.16 * spot.scale, spot.rot);
+  }
+}
+
+function drawBigEggSplat(cx, cy, size, rot) {
+  context.save();
+  context.translate(cx, cy);
+  context.rotate(rot);
+
+  context.fillStyle = "rgba(255, 250, 235, 0.92)";
+  context.beginPath();
+  context.moveTo(0, -size * 0.5);
+  context.bezierCurveTo(size * 0.7, -size * 0.6, size * 0.9, size * 0.1, size * 0.4, size * 0.4);
+  context.bezierCurveTo(size * 0.2, size * 0.75, -size * 0.5, size * 0.7, -size * 0.7, size * 0.2);
+  context.bezierCurveTo(-size * 0.9, -size * 0.2, -size * 0.4, -size * 0.6, 0, -size * 0.5);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = "rgba(150, 110, 40, 0.2)";
+  context.lineWidth = 1.5;
+  context.stroke();
+
+  context.fillStyle = "#ffcf4d";
+  context.beginPath();
+  context.ellipse(size * 0.05, size * 0.05, size * 0.22, size * 0.18, 0.2, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "rgba(255, 255, 255, 0.7)";
+  context.beginPath();
+  context.ellipse(-size * 0.1, -size * 0.05, size * 0.08, size * 0.05, -0.3, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#fff8e6";
+  context.strokeStyle = "rgba(150, 110, 40, 0.4)";
+  context.lineWidth = 1.5;
+  context.beginPath();
+  context.moveTo(size * 0.5, -size * 0.4);
+  context.lineTo(size * 0.75, -size * 0.55);
+  context.lineTo(size * 0.68, -size * 0.28);
+  context.closePath();
+  context.fill();
+  context.stroke();
+
+  context.restore();
 }
 
 function drawFloorMess() {
