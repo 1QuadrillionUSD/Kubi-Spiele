@@ -53,13 +53,20 @@ let lastBurpTalk = -99;
 
 const GOLD_FEATHERS = ["#ffe14d", "#ffd23f", "#fff7bb", "#ffffff"];
 
+const pad = document.querySelector("#pad");
+const sideButton = document.querySelector("#side-button");
+const PAD_SIDE_KEY = "meine-spiele:huehnerjagd:pad-side";
+
 const input = createInput(canvas, {
+  padEl: pad,
+  knobEl: document.querySelector("#pad-knob"),
   onFirstTouch() {
     sfx.unlockAudio();
     hideHint();
   },
 });
 
+applyPadSide(readPadSide());
 resize();
 loadLevel(0);
 buildLevelPicker();
@@ -92,6 +99,15 @@ bindButton("#next-button", () => {
   startRound();
 });
 bindButton("#pause-button", togglePause);
+sideButton.addEventListener("click", () => {
+  const next = pad.classList.contains("is-right") ? "left" : "right";
+  applyPadSide(next);
+  try {
+    localStorage.setItem(PAD_SIDE_KEY, next);
+  } catch {
+    /* Speichern ist optional */
+  }
+});
 bindButton("#restart-button", () => {
   sfx.unlockAudio();
   loadLevel(G.levelIndex);
@@ -219,6 +235,18 @@ function resumeGame() {
 function togglePause() {
   if (state === STATE.RUNNING) pauseGame();
   else if (state === STATE.PAUSED) resumeGame();
+}
+
+function readPadSide() {
+  try {
+    return localStorage.getItem(PAD_SIDE_KEY) === "right" ? "right" : "left";
+  } catch {
+    return "left";
+  }
+}
+
+function applyPadSide(side) {
+  pad.classList.toggle("is-right", side === "right");
 }
 
 function hideHint() {

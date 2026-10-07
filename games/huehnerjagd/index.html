@@ -36,9 +36,19 @@
       <section class="play-area" aria-label="Hühnerjagd Spielfeld">
         <canvas id="game-canvas" aria-label="Spielfeld: Mit der Schlange Hühner fangen"></canvas>
 
+        <div class="pad" id="pad" aria-hidden="true">
+          <div class="pad-base">
+            <span class="pad-arrow up">&#9650;</span>
+            <span class="pad-arrow down">&#9660;</span>
+            <span class="pad-arrow left">&#9664;</span>
+            <span class="pad-arrow right">&#9654;</span>
+            <div class="pad-knob" id="pad-knob"></div>
+          </div>
+        </div>
+
         <div class="touch-hint is-hidden" id="touch-hint" aria-hidden="true">
-          <span>&#128070;</span>
-          <span>Finger ziehen, um die Schlange zu lenken</span>
+          <span>&#128073;</span>
+          <span>Mit dem Daumen im Kreis lenken</span>
         </div>
 
         <div class="start-panel" id="start-panel">
@@ -65,6 +75,9 @@
         </button>
         <button class="control-button" id="restart-button" type="button" aria-label="Neustart">
           <span aria-hidden="true">&#8635;</span>
+        </button>
+        <button class="control-button" id="side-button" type="button" aria-label="Joystick auf die andere Seite">
+          <span aria-hidden="true">&#8644;</span>
         </button>
       </div>
     </main>

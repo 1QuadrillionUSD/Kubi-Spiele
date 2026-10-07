@@ -73,7 +73,7 @@ a {
 }
 
 .control-bar {
-  grid-template-columns: repeat(2, minmax(58px, 1fr));
+  grid-template-columns: repeat(3, minmax(58px, 1fr));
 }
 
 .icon-button,
@@ -164,7 +164,7 @@ a {
 .touch-hint {
   position: absolute;
   left: 50%;
-  bottom: 16px;
+  top: 14px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -177,6 +177,65 @@ a {
   transform: translateX(-50%);
   pointer-events: none;
   white-space: nowrap;
+}
+
+.pad {
+  position: absolute;
+  left: clamp(12px, 3vmin, 28px);
+  bottom: clamp(12px, 3vmin, 28px);
+  width: clamp(130px, 24vmin, 200px);
+  aspect-ratio: 1;
+  z-index: 3;
+  touch-action: none;
+}
+
+.pad.is-right {
+  left: auto;
+  right: clamp(12px, 3vmin, 28px);
+}
+
+.pad-base {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 254, 250, 0.38);
+  border: 4px solid rgba(255, 254, 250, 0.75);
+  box-shadow: 0 9px 0 rgba(23, 50, 77, 0.12);
+}
+
+.pad.is-active .pad-base {
+  background: rgba(255, 254, 250, 0.5);
+}
+
+.pad-arrow {
+  position: absolute;
+  color: rgba(23, 50, 77, 0.45);
+  font-size: clamp(0.8rem, 2.4vmin, 1.1rem);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.pad-arrow.up { left: 50%; top: 9%; transform: translateX(-50%); }
+.pad-arrow.down { left: 50%; bottom: 9%; transform: translateX(-50%); }
+.pad-arrow.left { left: 9%; top: 50%; transform: translateY(-50%); }
+.pad-arrow.right { right: 9%; top: 50%; transform: translateY(-50%); }
+
+.pad-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  background: var(--sun);
+  box-shadow: 0 6px 0 #e5ad33;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.pad.is-active .pad-knob {
+  box-shadow: 0 3px 0 #e5ad33;
 }
 
 .start-panel {
@@ -310,7 +369,7 @@ a {
 
   .control-bar {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, min-content);
+    grid-template-rows: repeat(3, min-content);
     align-content: start;
   }
 

@@ -13,7 +13,7 @@ const KEY_DIRECTIONS = {
   KeyD: "right",
 };
 
-export function createInput(canvas, { onFirstTouch } = {}) {
+export function createInput(canvas, { onFirstTouch, padEl, knobEl } = {}) {
   const keys = { up: false, down: false, left: false, right: false };
   const stick = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
 
@@ -65,6 +65,62 @@ export function createInput(canvas, { onFirstTouch } = {}) {
   canvas.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
   document.addEventListener("gesturestart", (event) => event.preventDefault());
 
+  // Fester Joystick in der Ecke: Der Daumen bleibt außerhalb des Spielgeschehens.
+  const pad = { active: false, id: null, x: 0, y: 0 };
+  const PAD_DEADZONE = 0.2;
+
+  function setKnob(x, y) {
+    if (knobEl) knobEl.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+  }
+
+  function updatePad(event) {
+    const rect = padEl.getBoundingClientRect();
+    const radius = rect.width / 2;
+    let dx = event.clientX - (rect.left + radius);
+    let dy = event.clientY - (rect.top + radius);
+    const d = Math.hypot(dx, dy);
+    if (d > radius * 0.75) {
+      dx = (dx / d) * radius * 0.75;
+      dy = (dy / d) * radius * 0.75;
+    }
+    pad.x = dx / radius;
+    pad.y = dy / radius;
+    setKnob(dx, dy);
+  }
+
+  if (padEl) {
+    padEl.addEventListener("pointerdown", (event) => {
+      if (pad.active) return;
+      pad.active = true;
+      pad.id = event.pointerId;
+      try {
+        padEl.setPointerCapture(event.pointerId);
+      } catch {
+        /* ohne Capture funktioniert die Steuerung trotzdem */
+      }
+      padEl.classList.add("is-active");
+      updatePad(event);
+      onFirstTouch?.();
+      event.preventDefault();
+    });
+    padEl.addEventListener("pointermove", (event) => {
+      if (!pad.active || event.pointerId !== pad.id) return;
+      updatePad(event);
+      event.preventDefault();
+    });
+    const releasePad = (event) => {
+      if (event.pointerId !== pad.id) return;
+      pad.active = false;
+      pad.id = null;
+      pad.x = pad.y = 0;
+      padEl.classList.remove("is-active");
+      setKnob(0, 0);
+    };
+    padEl.addEventListener("pointerup", releasePad);
+    padEl.addEventListener("pointercancel", releasePad);
+    padEl.addEventListener("contextmenu", (event) => event.preventDefault());
+  }
+
   window.addEventListener("keydown", (event) => {
     const dir = KEY_DIRECTIONS[event.code];
     if (!dir) return;
@@ -78,6 +134,11 @@ export function createInput(canvas, { onFirstTouch } = {}) {
   window.addEventListener("blur", reset);
 
   function reset() {
+    pad.active = false;
+    pad.id = null;
+    pad.x = pad.y = 0;
+    setKnob(0, 0);
+    padEl?.classList.remove("is-active");
     stick.active = false;
     stick.id = null;
     keys.up = keys.down = keys.left = keys.right = false;
@@ -85,6 +146,10 @@ export function createInput(canvas, { onFirstTouch } = {}) {
 
   // Liefert { angle } oder null, wenn die Schlange einfach weiterlaufen soll.
   function getSteer() {
+    if (pad.active) {
+      if (Math.hypot(pad.x, pad.y) > PAD_DEADZONE) return { angle: Math.atan2(pad.y, pad.x) };
+      return null;
+    }
     if (stick.active) {
       const dx = stick.x - stick.ox;
       const dy = stick.y - stick.oy;
