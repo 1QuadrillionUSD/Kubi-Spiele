@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.9.2";
+const CACHE_VERSION = "meine-spiele-v1.12.0";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [
@@ -51,7 +51,24 @@ const FILES_TO_CACHE = [
   "./games/oma-backt-den-kuchen/index.html",
   "./games/oma-backt-den-kuchen/style.css",
   "./games/oma-backt-den-kuchen/game.js",
-  "./games/oma-backt-den-kuchen/assets/characters/oma-face-placeholder.png"
+  "./games/oma-backt-den-kuchen/assets/characters/oma-face-placeholder.png",
+  "./games/oma-backt-den-kuchen/assets/characters/oma-head-cutout.png",
+  "./games/huehnerjagd/",
+  "./games/huehnerjagd/index.html",
+  "./games/huehnerjagd/style.css",
+  "./games/huehnerjagd/js/main.js",
+  "./games/huehnerjagd/js/config.js",
+  "./games/huehnerjagd/js/state.js",
+  "./games/huehnerjagd/js/audio.js",
+  "./games/huehnerjagd/js/effects.js",
+  "./games/huehnerjagd/js/input.js",
+  "./games/huehnerjagd/js/snake.js",
+  "./games/huehnerjagd/js/chickens.js",
+  "./games/huehnerjagd/js/draw-chickens.js",
+  "./games/huehnerjagd/js/scenery.js",
+  "./games/huehnerjagd/js/items.js",
+  "./games/huehnerjagd/js/gags.js",
+  "./games/huehnerjagd/assets/characters/hen-head-cutout.png"
 ];
 
 const asCacheUrl = (path) => new URL(path, self.registration.scope).toString();

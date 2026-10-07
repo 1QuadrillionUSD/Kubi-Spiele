@@ -424,3 +424,8 @@ a {
     font-size: 0.72rem;
   }
 }
+
+/* Saturns Bild hat unten viel Leerraum, das Namensschild rückt deshalb näher an den Planeten. */
+.body-button[data-id="saturn"] .body-label {
+  top: calc(100% - 22px);
+}

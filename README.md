@@ -1,6 +1,6 @@
 # Meine Spiele
 
-Eine private, werbefreie Spielesammlung als Progressive Web App für iPad, Safari und GitHub Pages. Enthalten sind **Autorennen**, ein einfaches Sammelspiel mit Canvas, Touchsteuerung, Tastatursteuerung und lokalem Highscore, **Planetennamen**, eine kindgerechte Sonnensystem-Ansicht mit anklickbaren Himmelskörpern, sowie **Opa mäht den Rasen**, ein entspanntes Mäh- und Entdeckerspiel in einem liebevoll gestalteten Garten.
+Eine private, werbefreie Spielesammlung als Progressive Web App für iPad, Safari und GitHub Pages. Enthalten sind **Autorennen**, ein einfaches Sammelspiel mit Canvas, Touchsteuerung, Tastatursteuerung und lokalem Highscore, **Planetennamen**, eine kindgerechte Sonnensystem-Ansicht mit anklickbaren Himmelskörpern, sowie **Opa mäht den Rasen**, ein entspanntes Mäh- und Entdeckerspiel in einem liebevoll gestalteten Garten, und die **Hühnerjagd**, bei der eine freche Cartoon-Schlange Hühner fängt.
 
 ## Lokal starten
 
@@ -37,9 +37,13 @@ meine-spiele/
 └── games/
     ├── autorennen/
     ├── planetennamen/
-    └── opa-maeht-den-rasen/
-        ├── js/
-        └── assets/characters/
+    ├── opa-maeht-den-rasen/
+    │   ├── js/
+    │   └── assets/characters/
+    ├── oma-backt-den-kuchen/
+    │   └── assets/characters/
+    └── huehnerjagd/
+        └── js/
 ```
 
 Jedes Spiel liegt in einem eigenen Ordner unter `games/`. Gemeinsame Funktionen wie Highscore, PWA-Registrierung, Sound und Touch-Helfer liegen unter `shared/`.
@@ -49,6 +53,8 @@ Jedes Spiel liegt in einem eigenen Ordner unter `games/`. Gemeinsame Funktionen 
 - `games/autorennen/`: Sammelspiel mit Auto, Früchten, Bomben und Mauern.
 - `games/planetennamen/`: Sonnensystem mit Merkur, Venus, Erde, Mond, Mars, Jupiter, Saturn, Uranus, Neptun und Pluto. Beim Antippen öffnet sich ein großes Bild mit zweisprachigen Basisinformationen auf Deutsch und Slowakisch zum Vorlesen.
 - `games/opa-maeht-den-rasen/`: Opa hilft im Garten – der Spieler mäht mit ihm zusammen hohes Gras zu einem gepflegten Rasen, sammelt dabei gelegentlich Blumen, Früchte und Sterne ein und trifft auf Schmetterlinge, Marienkäfer, Bienen und Vögel. Ohne Zeitdruck, ohne Gegner, ohne Verlieren. Opas Gesicht ist als austauschbarer Platzhalter angelegt, siehe `assets/characters/opa-face-placeholder.png` in diesem Spielordner.
+- `games/oma-backt-den-kuchen/`: Oma fängt mit ihrer Schüssel herabfallende Zutaten auf, bis genug für den Kuchen beisammen ist.
+- `games/huehnerjagd/`: Eine freundliche Cartoon-Schlange fängt Hühner auf Wiese, Bauernhof und im Garten. Gesteuert wird per Ziehen auf dem Spielfeld (schwebender Joystick) oder mit Pfeiltasten/WASD; Leertaste oder Esc pausiert. Die Schlange wächst mit jedem Fang, es gibt kein Game Over: Wer sich verknotet, wird nur kurz kürzer. Hühnerarten: normales Huhn, Rennhuhn, dickes Huhn, Küken, goldenes Huhn und ein Hahn, der die anderen mit seinem Krähen auseinanderstieben lässt. Power-ups sind Maiskörner (Turbo), Pfützen (rutschig) und Heuballen (Versteck). Dazu kommen Gags wie Traktor, Kuh und goldene Eier sowie ein lokaler Rekord. Der Code ist in Module unter `js/` aufgeteilt (`main.js` Spielablauf, `snake.js`, `chickens.js`, `draw-chickens.js`, `scenery.js`, `items.js`, `gags.js`, `effects.js`, `audio.js`, `input.js`, `config.js` mit allen Zahlen und Leveln).
 
 ## GitHub-Repository erstellen
 
@@ -114,6 +120,16 @@ games/opa-maeht-den-rasen/assets/characters/opa-face-placeholder.png
 Wichtig: Diese Datei muss ein **freigestelltes PNG mit transparentem Hintergrund** sein (Kopf bis knapp unter das Kinn, Hintergrund entfernt) – kein normales Rechteck-Foto. Das Spiel zeichnet die Datei nämlich unverändert auf die Figur, ohne eigenen Rahmen oder Kreis; ein Foto mit sichtbarem Hintergrund würde daher als Rechteck über der Figur schweben. Hintergrund entfernen geht z. B. kostenlos online (Suche nach "Hintergrund entfernen") oder lokal mit dem Python-Tool `rembg`. Danach reicht es, das Ergebnis knapp um den Kopf zuzuschneiden und unter obigem Dateinamen zu speichern – keine weiteren Codeänderungen nötig. Fehlt die Datei oder lädt sie nicht, wird automatisch ein gezeichnetes Ersatzgesicht angezeigt.
 
 Weitere Familienmitglieder lassen sich auf dieselbe Weise vorbereiten: In `games/opa-maeht-den-rasen/js/characters.js` steht dafür `FACE_SOURCES`, eine Zuordnung von Namen zu Bilddateien. Ergänze dort z. B. `oma`, `mama` oder `papa` mit eigenem Dateipfad, sobald diese Figuren im Spiel gebraucht werden.
+
+## Kopf für die Hühner austauschen
+
+Alle Hühner der Hühnerjagd tragen denselben Kopf. Er liegt als freigestelltes PNG unter:
+
+```text
+games/huehnerjagd/assets/characters/hen-head-cutout.png
+```
+
+Die Datei muss ein **freigestelltes PNG mit transparentem Hintergrund** sein (Haare bis knapp unters Kinn, etwa 340 px breit). Unten wird der Kopf im Spiel von einer Federkrause verdeckt, die Schnittkante darf also ruhig gerade sein. Fehlt die Datei, zeichnet das Spiel normale Hühnerköpfe. Nach einem Austausch in `service-worker.js` die `CACHE_VERSION` erhöhen.
 
 ## PWA- und Offline-Dateien
 

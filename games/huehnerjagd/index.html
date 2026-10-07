@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#5ebd57">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Hühnerjagd">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Hühnerjagd</title>
+    <link rel="manifest" href="../../manifest.webmanifest">
+    <link rel="apple-touch-icon" href="../../assets/icons/apple-touch-icon.png">
+    <link rel="icon" href="../../assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./js/main.js"></script>
+  </head>
+  <body>
+    <main class="game-page">
+      <div class="top-bar" aria-label="Spielwerte">
+        <a class="icon-button home-button" href="../../" aria-label="Zur Spielesammlung">
+          <span aria-hidden="true">&#8962;</span>
+        </a>
+        <div class="score-box">
+          <span class="label">Hühner gefangen</span>
+          <strong id="caught">0/12</strong>
+        </div>
+        <div class="score-box">
+          <span class="label">Punkte</span>
+          <strong id="score">0</strong>
+        </div>
+        <button class="icon-button sound-button" id="sound-button" type="button" aria-label="Ton an/aus">
+          <span aria-hidden="true" id="sound-icon">&#128266;</span>
+        </button>
+      </div>
+
+      <section class="play-area" aria-label="Hühnerjagd Spielfeld">
+        <canvas id="game-canvas" aria-label="Spielfeld: Mit der Schlange Hühner fangen"></canvas>
+
+        <div class="touch-hint is-hidden" id="touch-hint" aria-hidden="true">
+          <span>&#128070;</span>
+          <span>Finger ziehen, um die Schlange zu lenken</span>
+        </div>
+
+        <div class="start-panel" id="start-panel">
+          <h1 id="panel-title">Hühnerjagd</h1>
+          <p class="panel-text" id="panel-text"></p>
+          <div class="level-picker" id="level-picker" role="group" aria-label="Level wählen"></div>
+          <p class="panel-stats is-hidden" id="panel-stats"></p>
+          <div class="panel-buttons">
+            <button class="primary-button" id="start-button" type="button">
+              <span aria-hidden="true" id="start-button-icon">&#9654;</span>
+              <span id="start-button-label">Los geht's</span>
+            </button>
+            <button class="secondary-button is-hidden" id="next-button" type="button">
+              <span>Nächstes Level</span>
+              <span aria-hidden="true">&#9654;</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="control-bar" aria-label="Spielsteuerung">
+        <button class="control-button" id="pause-button" type="button" aria-label="Pause">
+          <span aria-hidden="true">&#10074;&#10074;</span>
+        </button>
+        <button class="control-button" id="restart-button" type="button" aria-label="Neustart">
+          <span aria-hidden="true">&#8635;</span>
+        </button>
+      </div>
+    </main>
+  </body>
+</html>

@@ -584,3 +584,166 @@ h1 {
     min-height: 58svh;
   }
 }
+
+/* Hühnerjagd-Kachel */
+.hunt-tile {
+  background: linear-gradient(160deg, #cfeeff 0%, #b8ec7e 46%, #5fbf5b 100%);
+}
+
+.mini-hunt {
+  position: relative;
+  width: min(88%, 380px);
+  aspect-ratio: 1;
+}
+
+.mini-hunt-sun {
+  position: absolute;
+  left: 6%;
+  top: 4%;
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff7bb, #ffd45f 55%, #ff9d3d);
+  box-shadow: 0 0 28px rgba(255, 212, 95, 0.7);
+}
+
+.mini-hunt-hill {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  bottom: -6%;
+  height: 34%;
+  border-radius: 50% 50% 0 0;
+  background: rgba(63, 154, 76, 0.45);
+}
+
+.mini-snake-seg,
+.mini-snake-head,
+.mini-hen,
+.mini-chick,
+.mini-egg {
+  position: absolute;
+}
+
+.mini-snake-seg {
+  width: 15%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #4fbb52;
+  border: 3px solid #2a7a3d;
+  box-shadow: 0 6px 0 rgba(23, 50, 77, 0.14);
+}
+
+.mini-snake-seg.s1 { left: 6%; top: 74%; width: 9%; }
+.mini-snake-seg.s2 { left: 15%; top: 70%; width: 12%; background: #62d05e; }
+.mini-snake-seg.s3 { left: 26%; top: 76%; width: 14%; }
+.mini-snake-seg.s4 { left: 38%; top: 70%; width: 15%; background: #62d05e; }
+.mini-snake-seg.s5 { left: 49%; top: 62%; width: 16%; }
+
+.mini-snake-head {
+  left: 60%;
+  top: 48%;
+  width: 24%;
+  aspect-ratio: 1.15;
+  border-radius: 50%;
+  background: #6ad865;
+  border: 3px solid #2a7a3d;
+  box-shadow: 0 6px 0 rgba(23, 50, 77, 0.14);
+}
+
+.mini-snake-head::before,
+.mini-snake-head::after {
+  content: "";
+  position: absolute;
+  top: 12%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 55%, #17324d 0 32%, #fff 36%);
+  border: 2px solid #2a7a3d;
+}
+
+.mini-snake-head::before { left: 14%; }
+.mini-snake-head::after { left: 52%; }
+
+.mini-snake-tongue {
+  position: absolute;
+  right: -34%;
+  top: 56%;
+  width: 40%;
+  height: 4px;
+  border-radius: 4px;
+  background: #ff3f5f;
+}
+
+.mini-hen {
+  right: 4%;
+  top: 22%;
+  width: 28%;
+  aspect-ratio: 1.15;
+  border-radius: 50% 50% 46% 46%;
+  background: #fff7e3;
+  border: 3px solid #b99556;
+  box-shadow: 0 8px 0 rgba(23, 50, 77, 0.14);
+}
+
+.mini-hen::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  top: -22%;
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ee4b4b;
+  box-shadow: 10px -4px 0 #ee4b4b;
+}
+
+.mini-hen::after {
+  content: "";
+  position: absolute;
+  left: -16%;
+  top: 22%;
+  border-style: solid;
+  border-width: 7px 14px 7px 0;
+  border-color: transparent #ffa733 transparent transparent;
+}
+
+.mini-hen-wing {
+  position: absolute;
+  right: 12%;
+  top: 38%;
+  width: 46%;
+  height: 36%;
+  border-radius: 50%;
+  background: #f1d9a6;
+  border: 2px solid #b99556;
+}
+
+.mini-chick {
+  right: 36%;
+  top: 36%;
+  width: 11%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ffe45c;
+  border: 2px solid #c79a1f;
+  box-shadow: 0 5px 0 rgba(23, 50, 77, 0.14);
+}
+
+.mini-egg {
+  left: 24%;
+  top: 40%;
+  width: 11%;
+  aspect-ratio: 0.8;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: #fff8e6;
+  border: 2px solid #b99556;
+  box-shadow: 0 6px 0 rgba(23, 50, 77, 0.14);
+}
+
+@supports (width: 1cqw) {
+  .hunt-tile .tile-title {
+    font-size: clamp(1.4rem, 10cqw, 3.4rem);
+  }
+}

@@ -32,6 +32,7 @@ import {
   startMower,
   stopMower,
   startAmbience,
+  stopAmbience,
   playFanfare,
   isMuted,
   toggleMuted,
@@ -91,6 +92,9 @@ setText("#score", score);
 updateSoundIcon();
 
 window.addEventListener("resize", resizeCanvas);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && state === STATE.RUNNING) togglePause();
+});
 
 registerServiceWorker({
   scriptUrl: "../../../service-worker.js",
@@ -129,6 +133,7 @@ function startGame() {
 function resumeGame() {
   state = STATE.RUNNING;
   startPanel.classList.add("is-hidden");
+  startAmbience();
 }
 
 function togglePause() {
@@ -137,6 +142,7 @@ function togglePause() {
   if (state === STATE.RUNNING) {
     state = STATE.PAUSED;
     stopMower();
+    stopAmbience();
     panelTitle.textContent = "Pause";
     panelText.textContent = "Opa macht kurz eine Verschnaufpause im Garten.";
     startButtonLabel.textContent = "Weiter";
@@ -173,6 +179,7 @@ function restartGarden() {
 
   state = STATE.READY;
   stopMower();
+  stopAmbience();
   panelTitle.textContent = "Neuer Garten";
   panelText.textContent = "Der Rasen ist wieder hoch gewachsen. Auf geht's!";
   startButtonLabel.textContent = "Los geht's";
@@ -182,6 +189,7 @@ function restartGarden() {
 function completeGarden() {
   state = STATE.COMPLETE;
   stopMower();
+  stopAmbience();
   saveHighscore(GAME_ID, score);
   playFanfare();
 

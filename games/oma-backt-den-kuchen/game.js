@@ -46,6 +46,9 @@ let width = 0;
 let height = 0;
 let floorY = 0;
 let stage = { x: 0, width: 0 };
+let cakeZone = { cx: 0, size: 0 };
+let cakeShown = 0;
+let cakePulse = 0;
 let oma = { x: 0, targetX: 0, y: 0, width: 0, height: 0 };
 let ingredients = [];
 let splats = [];
@@ -134,6 +137,15 @@ function startGame() {
 
   state = GameState.RUNNING;
   startPanel.classList.add("is-hidden");
+  fadeOutTouchHint();
+}
+
+// Der Hinweis "ziehen" ist nur am Anfang nützlich und würde sonst dauerhaft das Auto bzw. Oma verdecken.
+let hintTimer = null;
+function fadeOutTouchHint() {
+  const hint = document.querySelector(".touch-hint");
+  if (!hint || hintTimer) return;
+  hintTimer = setTimeout(() => hint.classList.add("is-faded"), 3500);
 }
 
 function togglePause() {
@@ -156,6 +168,8 @@ function resetGame() {
   splats = [];
   popups = [];
   outcome = null;
+  cakeShown = 0;
+  cakePulse = 0;
   state = GameState.READY;
   oma.x = stage.x + stage.width / 2;
   oma.targetX = oma.x;
@@ -178,9 +192,13 @@ function resizeCanvas() {
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
   context.imageSmoothingEnabled = true;
 
-  stage.width = Math.min(width * 0.86, 560);
-  stage.x = (width - stage.width) / 2;
+  // Links bleibt Platz für den wachsenden Kuchen, der Rest ist die Spielbühne.
+  const cakeSpace = Math.max(112, Math.min(300, width * 0.3));
+  stage.width = Math.min(width * 0.86, 560, width - cakeSpace - 20);
+  stage.x = Math.max((width - stage.width) / 2, cakeSpace + 12);
   floorY = height - Math.max(28, height * 0.09);
+  cakeZone.cx = stage.x / 2;
+  cakeZone.size = Math.max(0, Math.min((stage.x - 16) / 1.24, 240, (floorY * 0.7) / 1.45));
 
   oma.width = Math.max(72, Math.min(112, stage.width * 0.22));
   oma.height = oma.width * 1.5;
@@ -194,6 +212,12 @@ function loop(timestamp) {
   if (state === GameState.RUNNING) {
     update(delta);
   }
+
+  // Der Kuchen wächst sanft auf den aktuellen Fortschritt zu.
+  const target = Math.min(1, caught / TARGET_CAUGHT);
+  cakeShown += (target - cakeShown) * Math.min(1, 5 * delta);
+  if (Math.abs(target - cakeShown) < 0.002) cakeShown = target;
+  cakePulse = Math.max(0, cakePulse - delta * 3);
 
   draw();
   requestAnimationFrame(loop);
@@ -276,6 +300,7 @@ function updateSplats(delta) {
 
 function collectIngredient(item) {
   caught += 1;
+  cakePulse = 1;
   setText("#caught", `${caught}/${TARGET_CAUGHT}`);
   popups.push({ x: item.x, y: item.y, text: "+1", life: 0.7, color: "#127657" });
   playCollectSound();
@@ -555,49 +580,12 @@ function drawWindow(win) {
 }
 
 function drawCakeProgress() {
-  const progress = Math.min(1, caught / TARGET_CAUGHT);
-  if (progress <= 0) return;
-
-  const standWidth = Math.min(64, Math.max(40, stage.width * 0.13));
-  const standX = stage.x + standWidth * 0.75;
-  const baseY = floorY - 4;
-  const maxHeight = Math.min(150, height * 0.26);
-  const cakeHeight = maxHeight * progress;
-
-  context.fillStyle = "rgba(23, 50, 77, 0.18)";
-  context.beginPath();
-  context.ellipse(standX, baseY + 4, standWidth * 0.62, 6, 0, 0, Math.PI * 2);
-  context.fill();
-
-  context.fillStyle = "#e7c48a";
-  roundedRect(standX - standWidth * 0.58, baseY - 8, standWidth * 1.16, 10, 4);
-  context.fill();
-
-  context.fillStyle = "#f6d9a6";
-  roundedRect(standX - standWidth / 2, baseY - 8 - cakeHeight, standWidth, cakeHeight, 8);
-  context.fill();
-
-  context.strokeStyle = "rgba(122, 74, 45, 0.3)";
-  context.lineWidth = 2;
-  for (let ly = baseY - 8 - 24; ly > baseY - 8 - cakeHeight + 6; ly -= 24) {
-    context.beginPath();
-    context.moveTo(standX - standWidth / 2 + 4, ly);
-    context.lineTo(standX + standWidth / 2 - 4, ly);
-    context.stroke();
-  }
-
-  if (cakeHeight > 12) {
-    context.fillStyle = "#fff1da";
-    roundedRect(standX - standWidth / 2, baseY - 8 - cakeHeight - 8, standWidth, 10, 5);
-    context.fill();
-  }
-
-  if (progress >= 0.85) {
-    context.fillStyle = "#b5233a";
-    context.beginPath();
-    context.arc(standX, baseY - 8 - cakeHeight - 14, 6, 0, Math.PI * 2);
-    context.fill();
-  }
+  if (cakeZone.size < 40) return;
+  drawCake(cakeZone.cx, floorY - 4, cakeZone.size, cakeShown, {
+    ghost: true,
+    pulse: cakePulse,
+    time: performance.now() / 1000,
+  });
 }
 
 function drawFloorSplats() {
@@ -896,57 +884,207 @@ function drawFallbackHead(cx, bottomY, targetWidth) {
 }
 
 function drawCakeScene() {
-  const cakeX = width * 0.62;
-  drawCake(cakeX, floorY - 4, Math.min(150, width * 0.32));
-  drawOma({ x: width * 0.24, withBowl: false });
+  const time = performance.now() / 1000;
+  const size = Math.max(90, Math.min(width * 0.42, floorY * 0.62 / 1.1, 300));
+  const cakeX = width * 0.64;
+  drawCake(cakeX, floorY - 4, size, 1, { time, pulse: 0 });
+
+  // Funkelnde Sternchen um den fertigen Kuchen
+  const twinkle = [
+    [-0.62, -0.95, 7],
+    [0.66, -0.8, 6],
+    [-0.38, -1.25, 5],
+    [0.34, -1.3, 8],
+    [0.0, -1.55, 6],
+  ];
+  context.fillStyle = "#ffd45f";
+  twinkle.forEach(([dx, dy, r], i) => {
+    const scale = 0.7 + 0.3 * Math.sin(time * 4 + i * 1.7);
+    drawStar(cakeX + dx * size, floorY - 4 + dy * size * 0.62, r * scale * Math.max(1, size / 150));
+  });
+
+  drawOma({ x: width * 0.22, withBowl: false });
 }
 
-function drawCake(cx, baseY, size) {
-  const w = size;
-  const h = size * 0.55;
+const CAKE_TIERS = [
+  { w: 1, h: 0.37, from: 0, to: 0.32, body: "#c98a4b", shade: "#a9683a" },
+  { w: 0.74, h: 0.33, from: 0.32, to: 0.62, body: "#8a5230", shade: "#6d3f24" },
+  { w: 0.48, h: 0.29, from: 0.62, to: 0.86, body: "#f3a3b6", shade: "#e07f98" },
+];
 
-  context.fillStyle = "#fffefa";
+// Ein Kuchen für Spiel und Endbild: Das Stockwerk-Wachstum folgt dem Fortschritt (0 bis 1).
+function drawCake(cx, baseY, size, progress, { ghost = false, pulse = 0, time = 0 } = {}) {
+  const standH = size * 0.17;
+  const plateRx = size * 0.62;
+  const plateRy = size * 0.07;
+  const plateY = baseY - standH;
+
+  context.save();
+
+  // Kuchenständer
+  context.fillStyle = "rgba(23, 50, 77, 0.18)";
   context.beginPath();
-  context.ellipse(cx, baseY, w * 0.62, h * 0.18, 0, 0, Math.PI * 2);
+  context.ellipse(cx, baseY + 2, size * 0.34, size * 0.045, 0, 0, Math.PI * 2);
   context.fill();
-  context.strokeStyle = "rgba(23, 50, 77, 0.15)";
+  context.fillStyle = "#e7c48a";
+  context.beginPath();
+  context.ellipse(cx, baseY - size * 0.02, size * 0.28, size * 0.04, 0, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#d9ae6c";
+  context.fillRect(cx - size * 0.045, plateY, size * 0.09, standH - size * 0.02);
+  context.fillStyle = "#fffefa";
+  context.strokeStyle = "rgba(23, 50, 77, 0.2)";
   context.lineWidth = 2;
+  context.beginPath();
+  context.ellipse(cx, plateY, plateRx, plateRy, 0, 0, Math.PI * 2);
+  context.fill();
   context.stroke();
 
-  context.fillStyle = "#c98a4b";
-  roundedRect(cx - w * 0.5, baseY - h * 0.55, w, h * 0.55, 10);
-  context.fill();
-  context.fillStyle = "#fff1da";
-  roundedRect(cx - w * 0.5, baseY - h * 0.62, w, h * 0.16, 8);
-  context.fill();
+  // Der Kuchen "federt" kurz, wenn eine Zutat hineinkommt.
+  const squash = 1 + pulse * 0.06;
+  context.translate(cx, plateY);
+  context.scale(1 / squash, squash);
+  context.translate(-cx, -plateY);
 
-  const tw = w * 0.62;
-  const th = h * 0.5;
-  context.fillStyle = "#a9683a";
-  roundedRect(cx - tw / 2, baseY - h * 0.55 - th, tw, th, 8);
-  context.fill();
-  context.fillStyle = "#fff1da";
-  roundedRect(cx - tw / 2, baseY - h * 0.55 - th - h * 0.12, tw, h * 0.14, 6);
-  context.fill();
-
-  context.fillStyle = "#e2574c";
-  for (let i = -2; i <= 2; i += 1) {
-    context.beginPath();
-    context.ellipse(cx + i * tw * 0.18, baseY - h * 0.55 - th * 0.85, tw * 0.07, th * 0.22, 0, 0, Math.PI * 2);
-    context.fill();
+  // Geisterumriss: zeigt, wie der Kuchen am Ende aussehen wird
+  if (ghost) {
+    context.save();
+    context.setLineDash([6, 6]);
+    context.strokeStyle = "rgba(122, 74, 45, 0.45)";
+    context.fillStyle = "rgba(255, 255, 255, 0.28)";
+    context.lineWidth = 2;
+    let gy = plateY - 2;
+    for (const tier of CAKE_TIERS) {
+      const tw = size * tier.w;
+      const th = size * tier.h;
+      roundedRect(cx - tw / 2, gy - th, tw, th, 10);
+      context.fill();
+      context.stroke();
+      gy -= th;
+    }
+    context.restore();
   }
 
-  context.fillStyle = "#ffd45f";
-  roundedRect(cx - size * 0.02, baseY - h * 0.55 - th - h * 0.12 - size * 0.16, size * 0.04, size * 0.16, 3);
-  context.fill();
-  context.fillStyle = "#ff9d4d";
-  context.beginPath();
-  context.arc(cx, baseY - h * 0.55 - th - h * 0.12 - size * 0.16 - 4, size * 0.03, 0, Math.PI * 2);
-  context.fill();
+  // Stockwerke von unten nach oben
+  let y = plateY - 2;
+  let topY = y;
+  let topW = size;
+  let completeTiers = 0;
+  for (const tier of CAKE_TIERS) {
+    const grown = Math.max(0, Math.min(1, (progress - tier.from) / (tier.to - tier.from)));
+    if (grown <= 0) break;
+    const eased = 1 - Math.pow(1 - grown, 2);
+    const tw = size * tier.w;
+    const th = size * tier.h * eased;
 
-  context.fillStyle = "#b5233a";
+    context.fillStyle = tier.body;
+    roundedRect(cx - tw / 2, y - th, tw, th, Math.min(12, th / 2 + 2));
+    context.fill();
+    context.strokeStyle = "rgba(60, 30, 10, 0.35)";
+    context.lineWidth = 2;
+    context.stroke();
+
+    // Schichten und Glanz
+    if (th > 14) {
+      context.fillStyle = tier.shade;
+      context.fillRect(cx - tw / 2 + 3, y - th * 0.52, tw - 6, Math.max(3, th * 0.1));
+      context.fillStyle = "rgba(255, 255, 255, 0.18)";
+      roundedRect(cx - tw / 2 + 6, y - th + 5, tw * 0.16, Math.max(0, th - 10), 4);
+      context.fill();
+    }
+
+    topY = y - th;
+    topW = tw;
+    if (grown >= 1) {
+      completeTiers += 1;
+      drawCreamTop(cx, topY, tw, size);
+    }
+    y -= th;
+  }
+
+  // Verzierung: Kirschen, Kerze
+  const deco = Math.max(0, Math.min(1, (progress - 0.86) / 0.14));
+  if (deco > 0 && completeTiers === CAKE_TIERS.length) {
+    const first = CAKE_TIERS[0];
+    const second = CAKE_TIERS[1];
+    const firstTop = plateY - 2 - size * first.h;
+    const secondW = size * second.w;
+    const cherryR = size * 0.045 * deco;
+    for (const side of [-1, 1]) {
+      drawCherry(cx + side * (size * 0.5 + secondW / 2) / 2, firstTop - size * 0.005, cherryR);
+    }
+    const topTier = CAKE_TIERS[2];
+    const crownY = topY - size * 0.03;
+    drawCherry(cx - topW * 0.28, crownY, cherryR * 0.9);
+    drawCherry(cx + topW * 0.28, crownY, cherryR * 0.9);
+
+    if (deco > 0.45) {
+      const candleH = size * 0.17 * Math.min(1, (deco - 0.45) / 0.3);
+      const candleW = size * 0.04;
+      context.fillStyle = "#ffd45f";
+      roundedRect(cx - candleW / 2, topY - size * 0.02 - candleH, candleW, candleH, 3);
+      context.fill();
+      context.fillStyle = "#e2574c";
+      for (let i = 0; i < 3; i += 1) {
+        context.fillRect(cx - candleW / 2, topY - size * 0.02 - candleH + i * candleH * 0.3 + 3, candleW, candleH * 0.12);
+      }
+      if (deco >= 1) {
+        const flicker = 1 + Math.sin(time * 11) * 0.12;
+        const fx = cx + Math.sin(time * 7) * 1.4;
+        const fy = topY - size * 0.02 - candleH - size * 0.045;
+        context.fillStyle = "rgba(255, 190, 70, 0.4)";
+        context.beginPath();
+        context.arc(fx, fy, size * 0.06 * flicker, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "#ff9d3d";
+        context.beginPath();
+        context.ellipse(fx, fy, size * 0.025, size * 0.045 * flicker, 0, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "#fff1a8";
+        context.beginPath();
+        context.ellipse(fx, fy + size * 0.01, size * 0.012, size * 0.026 * flicker, 0, 0, Math.PI * 2);
+        context.fill();
+      }
+    }
+  }
+
+  context.restore();
+}
+
+// Sahnehaube mit Tropfen auf einem fertigen Stockwerk
+function drawCreamTop(cx, topY, tw, size) {
+  const creamH = size * 0.06;
+  context.fillStyle = "#fff1da";
+  context.strokeStyle = "rgba(122, 74, 45, 0.25)";
+  context.lineWidth = 1.5;
+  roundedRect(cx - tw / 2 - 2, topY - creamH * 0.6, tw + 4, creamH, creamH / 2);
+  context.fill();
+  context.stroke();
+  const drips = Math.max(3, Math.round(tw / (size * 0.17)));
+  for (let i = 0; i < drips; i += 1) {
+    const dx = cx - tw / 2 + (tw * (i + 0.5)) / drips;
+    const len = creamH * (0.9 + 0.7 * ((i * 37) % 5) / 5);
+    context.beginPath();
+    context.ellipse(dx, topY + creamH * 0.2 + len * 0.35, creamH * 0.28, len * 0.55, 0, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function drawCherry(x, y, r) {
+  if (r <= 0.5) return;
+  context.strokeStyle = "#3f8a3f";
+  context.lineWidth = Math.max(1.5, r * 0.22);
   context.beginPath();
-  context.arc(cx - tw * 0.18, baseY - h * 0.55 - th - h * 0.1, size * 0.045, 0, Math.PI * 2);
+  context.moveTo(x, y - r);
+  context.quadraticCurveTo(x + r * 0.3, y - r * 2.2, x + r * 0.9, y - r * 2.3);
+  context.stroke();
+  context.fillStyle = "#c71f3a";
+  context.beginPath();
+  context.arc(x, y - r * 0.2, r, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "rgba(255, 255, 255, 0.55)";
+  context.beginPath();
+  context.arc(x - r * 0.35, y - r * 0.55, r * 0.28, 0, Math.PI * 2);
   context.fill();
 }
 

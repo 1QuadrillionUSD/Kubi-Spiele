@@ -121,6 +121,15 @@ function startGame() {
 
   state = GameState.RUNNING;
   startPanel.classList.add("is-hidden");
+  fadeOutTouchHint();
+}
+
+// Der Hinweis "ziehen" ist nur am Anfang nützlich und würde sonst dauerhaft das Auto bzw. Oma verdecken.
+let hintTimer = null;
+function fadeOutTouchHint() {
+  const hint = document.querySelector(".touch-hint");
+  if (!hint || hintTimer) return;
+  hintTimer = setTimeout(() => hint.classList.add("is-faded"), 3500);
 }
 
 function togglePause() {
