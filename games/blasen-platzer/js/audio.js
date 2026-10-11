@@ -8,6 +8,7 @@ let voiceBus = null;
 let noiseBuffer = null;
 let muted = loadMuted();
 let lastPlop = 0;
+let keepAlive = null; // stilles Audio-Element (Ersatz für audioSession auf älteren iPads)
 
 function loadMuted() {
   try {
@@ -33,9 +34,54 @@ function ctx() {
     voiceBus = audioContext.createGain();
     voiceBus.connect(comp);
     comp.connect(audioContext.destination);
+    playbackSession();
   }
-  if (audioContext.state === "suspended") audioContext.resume();
+  // iOS setzt den Kontext nach Unterbrechungen auf "interrupted", nicht nur auf "suspended"
+  if (audioContext.state !== "running") audioContext.resume().catch(() => {});
   return audioContext;
+}
+
+// Auf dem iPad schaltet der Stumm-Schalter Web Audio sonst komplett aus: Die Sitzung wird als
+// "Wiedergabe" angemeldet (Safari 16.4+); ältere Versionen bekommen ein stilles Audio-Element.
+function playbackSession() {
+  try {
+    if (navigator.audioSession) {
+      navigator.audioSession.type = "playback";
+      return;
+    }
+  } catch {
+    /* dann der Ersatz unten */
+  }
+  try {
+    if (keepAlive) return;
+    const rate = 8000;
+    const n = 800;
+    const wav = new DataView(new ArrayBuffer(44 + n));
+    const text = (at, str) => [...str].forEach((c, i) => wav.setUint8(at + i, c.charCodeAt(0)));
+    text(0, "RIFF");
+    wav.setUint32(4, 36 + n, true);
+    text(8, "WAVEfmt ");
+    wav.setUint32(16, 16, true);
+    wav.setUint16(20, 1, true);
+    wav.setUint16(22, 1, true);
+    wav.setUint32(24, rate, true);
+    wav.setUint32(28, rate, true);
+    wav.setUint16(32, 1, true);
+    wav.setUint16(34, 8, true);
+    text(36, "data");
+    wav.setUint32(40, n, true);
+    for (let i = 0; i < n; i++) wav.setUint8(44 + i, 128); // Stille
+    keepAlive = new Audio(URL.createObjectURL(new Blob([wav], { type: "audio/wav" })));
+    keepAlive.loop = true;
+    keepAlive.setAttribute("playsinline", "");
+    keepAlive.play().catch(() => {});
+  } catch {
+    /* Ton bleibt optional */
+  }
+}
+
+export function isRunning() {
+  return Boolean(audioContext) && audioContext.state === "running";
 }
 
 export function getContext() {
@@ -86,7 +132,14 @@ export function toggleMuted() {
 
 // Muss in einer Berührung aufgerufen werden (iPad schaltet Ton erst danach frei).
 export function unlockAudio() {
-  ctx();
+  const c = ctx();
+  if (!c) return;
+  // ein stiller Ton in der Berührung schaltet iOS sicher frei
+  const src = c.createBufferSource();
+  src.buffer = c.createBuffer(1, 1, 22050);
+  src.connect(c.destination);
+  src.start(0);
+  if (keepAlive?.paused) keepAlive.play().catch(() => {});
 }
 
 function tone({ type = "sine", f0, f1 = f0, dur = 0.15, vol = 0.12, delay = 0, attack = 0.01 }) {

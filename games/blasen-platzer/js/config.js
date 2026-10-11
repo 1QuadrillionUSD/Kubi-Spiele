@@ -175,28 +175,28 @@ export const FIND = {
   lookalikes: [["1", "I"], ["O", "Q"], ["E", "F"], ["P", "R"], ["V", "Y"]], // ähnliche Zeichen: nicht beide gleichzeitig
 
   // Zielwahl und Zielblase
-  presentChance: 0.45, // Wahrscheinlichkeit, dass das neue Ziel schon in einer sichtbaren Blase steckt
+  presentChance: 0.3, // Wahrscheinlichkeit, dass das neue Ziel schon in einer sichtbaren Blase steckt (sonst muss das Kind erst warten und suchen)
   visibleTop: 0.12, // "sichtbar" heißt: Blasenmitte unterhalb dieses Anteils der Spielfeldhöhe (nicht kurz vor dem Rausschweben)
   delayMin: 1.5, // sonst erscheint die Zielblase nach so vielen ...
   delayMax: 5, // ... bis so vielen Sekunden
   maxWait: 6, // spätestens nach so vielen Sekunden ist sie da
   maxTargets: 2, // höchstens so viele Blasen mit dem gesuchten Zeichen gleichzeitig
 
-  // Blasenmenge (etwas weniger als im normalen Modus)
-  min: 5, // darunter kommen neue Blasen zügig nach
-  fill: 7, // bis hierhin füllt sich das Feld auf (meist sind es 5 bis 7)
-  cap: 8, // Obergrenze (Platz für die nachgelieferte Zielblase)
-  panic: 3, // darunter kommen Blasen sehr schnell nach
-  start: 7, // Blasen beim Spielstart
+  // Blasenmenge (etwa so viele wie im normalen Modus: viel Auswahl, das Ziel muss gesucht werden)
+  min: 7, // darunter kommen neue Blasen zügig nach
+  fill: 9, // bis hierhin füllt sich das Feld auf (meist sind es 7 bis 9)
+  cap: 10, // Obergrenze (Platz für die nachgelieferte Zielblase)
+  panic: 4, // darunter kommen Blasen sehr schnell nach
+  start: 9, // Blasen beim Spielstart
   gapPanic: 0.4, // Abstand zwischen zwei neuen Blasen bei wenigen Blasen
   gapRefill: 0.8, // Abstand unter "min"
-  gapFill: 1.8, // Abstand zwischen "min" und "fill"
+  gapFill: 1.3, // Abstand zwischen "min" und "fill"
 
-  // Blasen: etwas größer und langsamer, damit das Kind lesen und suchen kann
-  rMin: 64, // Radius in Einheiten
-  rMax: 86,
-  riseMin: 32, // Aufstiegsgeschwindigkeit
-  riseMax: 50,
+  // Blasen: etwas größer als im normalen Modus, aber nicht schnell, damit das Kind lesen und suchen kann
+  rMin: 58, // Radius in Einheiten
+  rMax: 80,
+  riseMin: 42, // Aufstiegsgeschwindigkeit (ca. 25 % schneller als zuvor mit 32 bis 50)
+  riseMax: 62,
 
   cardPush: 6, // wie stark Blasen der Zielkarte (oben rechts) ausweichen
 

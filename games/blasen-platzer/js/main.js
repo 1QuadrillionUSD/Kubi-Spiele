@@ -76,6 +76,17 @@ registerServiceWorker({
   scope: "../../../",
 });
 
+// iOS entsperrt Ton nur in bestimmten Berührungs-Ereignissen: bei jeder Berührung versuchen,
+// bis der Ton wirklich läuft; nach dem Zurückkehren in die App den Ton wieder aufnehmen.
+for (const type of ["touchend", "pointerup", "click"]) {
+  document.addEventListener(type, () => {
+    if (!sfx.isRunning()) unlockSound();
+  }, { passive: true });
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && !sfx.isMuted()) sfx.unlockAudio();
+});
+
 window.addEventListener("resize", resize);
 window.addEventListener("orientationchange", () => setTimeout(resize, 250));
 document.addEventListener("visibilitychange", () => {
