@@ -70,6 +70,8 @@ function nextStep() {
   r.seq++;
   r.step++;
   r.askIdx = 0;
+  // Die Zahl der Grundmenge bleibt während "dazu" / "weg" neben den Tieren stehen, alles andere verschwindet.
+  cards.clearLabels(r.step === 1 ? "main" : null);
   const step = r.task.steps[r.step];
   if (!step) {
     finishRound();
@@ -111,7 +113,11 @@ function ask() {
   scene.resetCount();
   const { values, correctIndex } = makeChoices(r.answer, G.max, lastCorrectIndex);
   lastCorrectIndex = correctIndex;
-  cards.dealCards(values, correctIndex);
+  // Grundmenge und "wie viele dazu / weg" stehen neben der Gruppe, die gezählt wird; das Ergebnis liegt unten.
+  let anchor = null;
+  if (step.type === "count") anchor = "main";
+  else if (step.asks.length > 1 && r.askIdx === 0) anchor = step.type === "add" ? "plus" : "minus";
+  cards.dealCards(values, correctIndex, anchor);
   sfx.tick();
 }
 
@@ -139,7 +145,7 @@ function right(card) {
   r.phase = "right";
   cards.markRight(card);
   sfx.rightChime();
-  const slot = G.layout.slots[card.index];
+  const slot = cards.cardRect(card);
   rightBurst(slot.x + slot.w / 2, slot.y + slot.h / 2, STARS.rightConfetti, STARS.rightStars);
   scene.cheerAll();
   G.stars++;

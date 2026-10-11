@@ -174,9 +174,11 @@ export function tapAnimal(x, y) {
 // ------------------------------------------------------------- Anordnung
 
 // Berechnet Maßstab, Inselrahmen und Platz jedes Tieres. snap = sofort statt gleitend.
+// Jede Gruppe bekommt einen Block, der mindestens so hoch ist wie die Kartenspalte daneben; die Insel
+// steht mittig im Block, damit die Karten beim Fragen immer neben den Tieren Platz haben.
 function layout(dt, snap) {
   const sc = G.scene;
-  const area = G.layout.area;
+  const { area, side } = G.layout;
   const U = G.U;
   const per = COUNT.perRow;
   const { cellW, cellH, pad, gap } = LAYOUT;
@@ -189,29 +191,44 @@ function layout(dt, snap) {
     dims[group] = { list, n, cols: Math.min(n, per), rows: Math.ceil(n / per), show: resting };
   }
   const second = dims.minus.n ? dims.minus : dims.plus;
-  const mainBlock = dims.main.n ? dims.main.rows * cellH + 2 * pad : 0;
-  const secBlock = second.n ? cellH + 2 * pad : 0;
-  const hUnits = mainBlock + (mainBlock && secBlock ? gap : 0) + secBlock;
+  const mainUnits = dims.main.n ? dims.main.rows * cellH + 2 * pad : 0;
+  const secUnits = second.n ? cellH + 2 * pad : 0;
+  const blocks = (s) =>
+    (mainUnits ? Math.max(mainUnits * s, side.total) : 0) +
+    (mainUnits && secUnits ? gap * s : 0) +
+    (secUnits ? Math.max(secUnits * s, side.total) : 0);
 
-  if (hUnits > 0) {
+  if (mainUnits || secUnits) {
     const fitW = (area.w * LAYOUT.fitWidth) / (per * cellW + 2 * pad);
-    const fitH = (area.h * LAYOUT.fitHeight) / hUnits;
-    const target = Math.min(fitW, fitH, LAYOUT.maxScale * U);
+    let hi = Math.min(fitW, LAYOUT.maxScale * U);
+    const maxH = area.h * LAYOUT.fitHeight;
+    let target = hi;
+    if (blocks(hi) > maxH) {
+      let lo = 0.2;
+      for (let i = 0; i < 14; i++) {
+        const mid = (lo + hi) / 2;
+        if (blocks(mid) > maxH) hi = mid;
+        else lo = mid;
+      }
+      target = lo;
+    }
     if (snap || !sc.scale) sc.scale = target;
     else sc.scale += (target - sc.scale) * (1 - Math.exp(-dt * LAYOUT.scaleEase));
   }
   const s = sc.scale || 1;
   const cx = area.x + area.w / 2;
-  const yTop = area.y + (area.h - hUnits * s) / 2;
+  const mainBlock = mainUnits ? Math.max(mainUnits * s, side.total) : 0;
+  const secBlock = secUnits ? Math.max(secUnits * s, side.total) : 0;
+  const yTop = area.y + (area.h - blocks(s)) / 2;
 
-  const place = (name, d, y, block) => {
+  const place = (name, d, y, blockPx, units) => {
     const r = sc.rects[name];
     r.talpha = d.n && d.show ? 1 : 0;
     if (!d.n) return;
     r.tw = (d.cols * cellW + 2 * pad) * s;
-    r.th = block * s;
+    r.th = units * s;
     r.tx = cx - r.tw / 2;
-    r.ty = y;
+    r.ty = y + (blockPx - r.th) / 2;
     for (const a of d.list) {
       const row = Math.floor(a.pos / per);
       const col = a.pos % per;
@@ -219,14 +236,14 @@ function layout(dt, snap) {
       a.ty = r.ty + (pad + row * cellH + cellH / 2) * s;
     }
   };
-  const secY = yTop + (mainBlock ? mainBlock + gap : 0) * s;
-  place("main", dims.main, yTop, mainBlock);
+  const secY = yTop + (mainBlock ? mainBlock + gap * s : 0);
+  place("main", dims.main, yTop, mainBlock, mainUnits);
   if (second === dims.minus) {
     sc.rects.plus.talpha = 0;
-    place("minus", dims.minus, secY, secBlock);
+    place("minus", dims.minus, secY, secBlock, secUnits);
   } else {
     sc.rects.minus.talpha = 0;
-    place("plus", dims.plus, secY, secBlock);
+    place("plus", dims.plus, secY, secBlock, secUnits);
   }
 
   const k = snap ? 1 : 1 - Math.exp(-dt * ANIM.islandEase);
@@ -291,7 +308,7 @@ export function updateScene(dt) {
         a.sx = a.tx;
         a.sy = area.y - ANIM.dropFrom * s;
       } else {
-        a.sx = area.x + area.w + ANIM.enterFrom * s;
+        a.sx = G.w + ANIM.enterFrom * s;
         a.sy = a.ty;
       }
       a.x = a.sx;

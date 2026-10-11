@@ -30,6 +30,18 @@ export function computeLayout() {
     panel = { x: x0 - m * 0.7, y: y - m * 0.7, w: total + m * 1.4, h: cardH + m * 1.4 };
     area = { x: 0, y: LAYOUT.topMargin * U, w, h: y - m * 1.2 - LAYOUT.topMargin * U };
   }
-  G.layout = { landscape, slots, panel, area };
+  // Kartenspalte neben den Tiergruppen: die Szene wird entsprechend schmaler
+  const sideW = clamp(area.w * CARDS.sideShare, CARDS.sideMin * U, CARDS.sideMax * U);
+  const sideGap = CARDS.sideGap * U;
+  const sideH = Math.min(sideW * CARDS.sideAspect, (area.h * CARDS.sideMaxHeight - sideGap * (CARDS.count - 1)) / CARDS.count);
+  const side = {
+    x: area.x + area.w - sideW - m * 0.5,
+    w: sideW,
+    h: sideH,
+    gap: sideGap,
+    total: sideH * CARDS.count + sideGap * (CARDS.count - 1),
+  };
+  area = { ...area, w: area.w - sideW - m * 1.5 };
+  G.layout = { landscape, slots, panel, area, side };
   return G.layout;
 }

@@ -3,6 +3,7 @@ import { G, TAU, clamp } from "./state.js";
 import { ANIM, CARDS, LAYOUT, TAP } from "./config.js";
 import { drawAnimal } from "./animals.js";
 import { hopOffset } from "./scene.js";
+import { cardRect } from "./cards.js";
 import { roundRect } from "./shapes.js";
 
 const FONT = 'ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, sans-serif';
@@ -259,19 +260,18 @@ const CARD_LOOK = {
 
 export function drawCardPanel(ctx) {
   const p = G.layout?.panel;
-  if (!p) return;
+  if (!p || G.panelAlpha < 0.02) return;
   roundRect(ctx, p.x, p.y, p.w, p.h, 30 * G.U);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.3 * G.panelAlpha})`;
   ctx.fill();
 }
 
 export function drawCards(ctx) {
-  const slots = G.layout?.slots;
-  if (!slots) return;
+  if (!G.layout || !G.scene) return;
   const U = G.U;
-  for (const card of G.cards) {
+  for (const card of [...G.labels, ...G.cards]) {
     if (card.age <= 0) continue;
-    const slot = slots[card.index];
+    const slot = cardRect(card);
     const appear = clamp(card.age / CARDS.appearTime, 0, 1);
     let sc = easeOutBack(appear);
     let alpha = Math.min(1, appear * 2);
@@ -282,6 +282,7 @@ export function drawCards(ctx) {
       dy = card.out * 36 * U;
     }
     if (card.state === "dim") alpha *= CARDS.dimAlpha;
+    if (card.label) alpha *= G.scene.rects[card.anchor].alpha * CARDS.labelAlpha; // verschwindet mit der Insel
     if (card.bounce > 0) sc *= 1 + Math.sin(card.bounce * Math.PI) * 0.14;
     sc *= 1 - 0.06 * card.press;
     let pulse = 0;
@@ -309,7 +310,7 @@ export function drawCards(ctx) {
     ctx.scale(sc, sc);
     const x = -slot.w / 2;
     const y = -slot.h / 2;
-    const r = 26 * U;
+    const r = Math.min(26 * U, slot.h * 0.28);
 
     if (card.hint) {
       roundRect(ctx, x - 8 * U, y - 8 * U, slot.w + 16 * U, slot.h + 16 * U, r + 6 * U);

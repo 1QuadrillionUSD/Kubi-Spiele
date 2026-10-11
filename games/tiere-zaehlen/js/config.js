@@ -45,6 +45,14 @@ export const CARDS = {
   landscapeMin: 120,
   landscapeMax: 210,
   aspect: 1.15, // Breite : Höhe einer Karte im Hochformat
+  // Karten neben einer Tiergruppe (Frage nach der Grundmenge und nach den neuen / gehenden Tieren)
+  sideShare: 0.2, // Breite der Kartenspalte neben den Tieren im Verhältnis zur Szenenbreite
+  sideMin: 84, // ... mindestens so breit (Einheiten)
+  sideMax: 150, // ... höchstens so breit
+  sideAspect: 0.72, // Höhe : Breite einer solchen Karte
+  sideMaxHeight: 0.42, // alle drei Karten zusammen nehmen höchstens so viel der Szenenhöhe ein (Querformat ist niedrig)
+  sideGap: 8, // Abstand zwischen den drei Karten der Spalte
+  labelAlpha: 1, // Deckkraft der stehenbleibenden, schon beantworteten Zahl neben der Gruppe
   fontShare: 0.62, // Schriftgröße im Verhältnis zur Kartenhöhe
   outline: 0.14, // Dicke des Zahlenumrisses im Verhältnis zur Schriftgröße
 };
