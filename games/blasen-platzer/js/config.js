@@ -172,31 +172,37 @@ export const FIND = {
   letters: "ABCDEFGHIJKLMNOPQRSTUVWXYZ", // Buchstaben (Großbuchstaben)
   digitShare: 0.5, // bei "Beides": Anteil der Zahlen bei Ziel und Störsymbolen (sonst gäbe es fast nur Buchstaben)
   recent: 3, // ein Ziel kommt nicht wieder, solange es unter den letzten so vielen Zielen war
-  lookalikes: [["1", "I"], ["O", "Q"], ["E", "F"], ["P", "R"], ["V", "Y"]], // ähnliche Zeichen: nicht beide gleichzeitig
+  lookalikes: [ // Gruppen ähnlich aussehender Zeichen: Störzeichen zum Verwechseln
+    ["1", "I", "L"], ["O", "Q", "D"], ["C", "G", "O"], ["E", "F", "L"], ["P", "R", "B"], ["V", "Y", "U"],
+    ["M", "N", "W", "H"], ["2", "Z"], ["5", "S"], ["6", "9"], ["8", "B", "3"], ["A", "H"], ["K", "X"], ["7", "T"],
+  ],
+  lookalikeChance: 0.4, // Wahrscheinlichkeit, dass eine neue Störblase dem Ziel ähnlich sieht (0 = nie)
+  sameKindShare: 0.6, // bei "Beides": so oft ist ein Störzeichen von derselben Art wie das Ziel (Buchstabe bei Buchstabe)
 
   // Zielwahl und Zielblase
-  presentChance: 0.3, // Wahrscheinlichkeit, dass das neue Ziel schon in einer sichtbaren Blase steckt (sonst muss das Kind erst warten und suchen)
+  presentChance: 0.55, // Wahrscheinlichkeit, dass das neue Ziel schon in einer sichtbaren Blase steckt (schwer ist es trotzdem: viele kleine, flotte Blasen)
   visibleTop: 0.12, // "sichtbar" heißt: Blasenmitte unterhalb dieses Anteils der Spielfeldhöhe (nicht kurz vor dem Rausschweben)
-  delayMin: 1.5, // sonst erscheint die Zielblase nach so vielen ...
-  delayMax: 5, // ... bis so vielen Sekunden
-  maxWait: 6, // spätestens nach so vielen Sekunden ist sie da
+  delayMin: 0.8, // sonst erscheint die Zielblase nach so vielen ...
+  delayMax: 3, // ... bis so vielen Sekunden
+  maxWait: 4, // spätestens nach so vielen Sekunden ist sie da
   maxTargets: 2, // höchstens so viele Blasen mit dem gesuchten Zeichen gleichzeitig
 
-  // Blasenmenge (etwa so viele wie im normalen Modus: viel Auswahl, das Ziel muss gesucht werden)
-  min: 7, // darunter kommen neue Blasen zügig nach
-  fill: 9, // bis hierhin füllt sich das Feld auf (meist sind es 7 bis 9)
-  cap: 10, // Obergrenze (Platz für die nachgelieferte Zielblase)
-  panic: 4, // darunter kommen Blasen sehr schnell nach
-  start: 9, // Blasen beim Spielstart
-  gapPanic: 0.4, // Abstand zwischen zwei neuen Blasen bei wenigen Blasen
-  gapRefill: 0.8, // Abstand unter "min"
-  gapFill: 1.3, // Abstand zwischen "min" und "fill"
+  // Blasenmenge (deutlich mehr als im normalen Modus: viel Auswahl, das Ziel muss gesucht werden)
+  min: 11, // darunter kommen neue Blasen zügig nach
+  fill: 14, // bis hierhin füllt sich das Feld auf (meist sind es 11 bis 14)
+  cap: 15, // Obergrenze (Platz für die nachgelieferte Zielblase)
+  panic: 7, // darunter kommen Blasen sehr schnell nach
+  start: 14, // Blasen beim Spielstart
+  poolShare: 0.7, // höchstens dieser Anteil aller Zeichen gleichzeitig im Bild (bei nur 10 Zahlen sind das 7 Blasen, sonst gäbe es doppelte Zeichen und das Ziel wäre immer schon da)
+  gapPanic: 0.3, // Abstand zwischen zwei neuen Blasen bei wenigen Blasen
+  gapRefill: 0.5, // Abstand unter "min"
+  gapFill: 0.9, // Abstand zwischen "min" und "fill"
 
   // Blasen: etwas größer als im normalen Modus, aber nicht schnell, damit das Kind lesen und suchen kann
-  rMin: 58, // Radius in Einheiten
-  rMax: 80,
-  riseMin: 42, // Aufstiegsgeschwindigkeit (ca. 25 % schneller als zuvor mit 32 bis 50)
-  riseMax: 62,
+  rMin: 46, // Radius in Einheiten (kleiner, damit viele Blasen Platz haben)
+  rMax: 68,
+  riseMin: 46, // Aufstiegsgeschwindigkeit
+  riseMax: 68,
 
   cardPush: 6, // wie stark Blasen der Zielkarte (oben rechts) ausweichen
 

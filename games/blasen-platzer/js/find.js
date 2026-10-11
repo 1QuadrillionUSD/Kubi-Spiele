@@ -49,10 +49,19 @@ export function symbolsFor(kinds) {
 
 // ------------------------------------------------------------------ Aufbau
 
+// Blasenmenge: bei kleinem Zeichenvorrat (nur Zahlen) weniger, damit nicht jedes Zeichen im Bild ist.
+function limitsFor(poolSize) {
+  const k = Math.min(1, Math.max(1, Math.round(poolSize * FIND.poolShare)) / FIND.fill);
+  const scale = (n) => Math.max(3, Math.round(n * k));
+  return { min: scale(FIND.min), fill: scale(FIND.fill), cap: scale(FIND.cap), panic: scale(FIND.panic), start: scale(FIND.start) };
+}
+
 export function resetFind(kinds) {
+  const pool = symbolsFor(kinds);
   G.find = {
     kinds,
-    pool: symbolsFor(kinds),
+    pool,
+    limits: limitsFor(pool.length),
     active: false,
     target: null,
     recent: [],
@@ -68,7 +77,7 @@ export function resetFind(kinds) {
   card.classList.add("is-hidden");
   voice.stop();
   // Feld gleich gut gefüllt, verteilt über die Höhe (auch hinter dem Start-Panel)
-  const n = FIND.start;
+  const n = G.find.limits.start;
   for (let i = 0; i < n; i++) {
     const y = G.h * (0.16 + (0.7 * i) / Math.max(1, n - 1)) + rand(-0.03, 0.03) * G.h;
     spawnSymbol(pickDistractor(), y);
@@ -106,8 +115,11 @@ function chooseFrom(list) {
   return pick(list);
 }
 
-function lookalike(a, b) {
-  return FIND.lookalikes.some(([p, q]) => (p === a && q === b) || (p === b && q === a));
+// Zeichen, die dem gegebenen ähnlich sehen (aus allen Gruppen, in denen es vorkommt).
+function similar(sym) {
+  const out = new Set();
+  for (const group of FIND.lookalikes) if (group.includes(sym)) group.forEach((s) => s !== sym && out.add(s));
+  return [...out];
 }
 
 function pickDistractor() {
@@ -115,15 +127,24 @@ function pickDistractor() {
   const live = shown();
   const taken = new Set(live.map((b) => b.sym));
   const all = f.pool.filter((s) => s !== f.target);
-  let list = all.filter((s) => !taken.has(s) && !(f.target && lookalike(s, f.target)));
-  if (!list.length) list = all.filter((s) => !taken.has(s));
+  // Manchmal ein Zeichen, das dem Ziel ähnlich sieht: schwerer zu unterscheiden.
+  if (f.target && Math.random() < FIND.lookalikeChance) {
+    const like = similar(f.target).filter((s) => f.pool.includes(s) && !taken.has(s));
+    if (like.length) return pick(like);
+  }
+  let list = all.filter((s) => !taken.has(s));
   if (!list.length) list = all;
-  // Bei Zahlen und Buchstaben soll immer von beidem etwas im Bild sein.
+  // Bei Zahlen und Buchstaben soll immer von beidem etwas im Bild sein ...
   if (f.kinds === "both") {
     const digits = live.filter((b) => isDigit(b.sym)).length;
     const wantDigit = digits === 0 ? true : digits === live.length ? false : null;
     if (wantDigit !== null) {
       const part = list.filter((s) => isDigit(s) === wantDigit);
+      if (part.length) return pick(part);
+    }
+    // ... meist aber von derselben Art wie das Ziel (ein Buchstabe unter Buchstaben ist schwerer zu finden)
+    if (f.target && Math.random() < FIND.sameKindShare) {
+      const part = list.filter((s) => isDigit(s) === isDigit(f.target));
       if (part.length) return pick(part);
     }
   }
@@ -182,7 +203,7 @@ function deliverTarget() {
   const f = G.find;
   f.pending = null;
   // Platz schaffen: ist das Feld voll, verschwindet oben leise eine Störblase.
-  if (visibleCount() >= FIND.cap) {
+  if (visibleCount() >= f.limits.cap) {
     const spare = shown()
       .filter((b) => b.sym !== f.target)
       .sort((p, q) => p.y - q.y)[0];
@@ -340,8 +361,9 @@ export function updateFind(dt) {
   // Störblasen als Nachschub
   f.spawnT += dt;
   const count = visibleCount();
-  const gap = count < FIND.panic ? FIND.gapPanic : count < FIND.min ? FIND.gapRefill : FIND.gapFill;
-  if (count < FIND.fill && f.spawnT >= gap) {
+  const lim = f.limits;
+  const gap = count < lim.panic ? FIND.gapPanic : count < lim.min ? FIND.gapRefill : FIND.gapFill;
+  if (count < lim.fill && f.spawnT >= gap) {
     spawnSymbol(pickDistractor());
     f.spawnT = 0;
   }
