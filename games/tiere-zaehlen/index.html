@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#9ed8f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Tiere zählen">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Tiere zählen</title>
+    <link rel="manifest" href="../../manifest.webmanifest">
+    <link rel="apple-touch-icon" href="../../assets/icons/apple-touch-icon.png">
+    <link rel="icon" href="../../assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./js/main.js"></script>
+  </head>
+  <body>
+    <main class="game-page">
+      <div class="top-bar" aria-label="Spielwerte">
+        <a class="icon-button home-button" href="../../" aria-label="Zur Spielesammlung">
+          <span aria-hidden="true">&#8962;</span>
+        </a>
+        <div class="score-box" aria-label="Sterne">
+          <span class="stars-row" id="stars-row" aria-hidden="true"></span>
+        </div>
+        <button class="icon-button sound-button" id="sound-button" type="button" aria-label="Ton an/aus">
+          <span aria-hidden="true" id="sound-icon">&#128266;</span>
+        </button>
+        <button class="icon-button pause-button" id="pause-button" type="button" aria-label="Pause">
+          <span aria-hidden="true">&#10074;&#10074;</span>
+        </button>
+      </div>
+
+      <section class="play-area" aria-label="Tiere zählen Spielfeld">
+        <canvas id="game-canvas" aria-label="Spielfeld: Tiere zählen und die richtige Zahl antippen"></canvas>
+
+        <div class="start-panel" id="start-panel">
+          <h1 id="panel-title">Tiere zählen</h1>
+          <p class="panel-text" id="panel-text"></p>
+          <div class="mode-picker" id="task-picker" role="group" aria-label="Plus, Minus oder Beides wählen"></div>
+          <div class="mode-picker mode-picker-small" id="range-picker" role="group" aria-label="Zahlenraum wählen"></div>
+          <div class="panel-buttons">
+            <button class="primary-button" id="start-button" type="button">
+              <span aria-hidden="true" id="start-button-icon">&#9654;</span>
+              <span id="start-button-label">Los geht's</span>
+            </button>
+            <button class="secondary-button is-hidden" id="menu-button" type="button">
+              <span aria-hidden="true">&#9776;</span>
+              <span>Zur Auswahl</span>
+            </button>
+            <a class="secondary-button" id="home-link" href="../../">
+              <span aria-hidden="true">&#8962;</span>
+              <span>Zur Sammlung</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
