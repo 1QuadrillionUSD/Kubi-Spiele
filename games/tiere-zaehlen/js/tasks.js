@@ -2,10 +2,11 @@
 import { pick, randInt, shuffle } from "./state.js";
 import { COUNT, CARDS, ANIMALS } from "./config.js";
 
-// Eine Runde besteht aus Schritten; jeder Schritt endet mit einer Frage "Wie viele sind es jetzt?":
-//   count  = Grundmenge zählen            (total = Grundmenge)
-//   add    = es kommen Tiere dazu         (total = Summe)
-//   remove = es gehen Tiere weg           (total = Rest)
+// Eine Runde besteht aus Schritten. Jeder Schritt hat eine oder zwei Fragen (asks):
+//   count  = Grundmenge zählen            asks: [Grundmenge]
+//   add    = es kommen Tiere dazu         asks: [wie viele kommen dazu, Summe]
+//   remove = es gehen Tiere weg           asks: [wie viele gehen weg, Rest]
+// (die erste Frage bei add/remove entfällt, wenn COUNT.askChange false ist)
 // Plus: count, add. Minus: count, remove. Beides: count, add, remove.
 export function makeTask(mode, max, prev = null) {
   let task = null;
@@ -18,6 +19,11 @@ export function makeTask(mode, max, prev = null) {
   return task;
 }
 
+function step(type, delta, total) {
+  const asks = type !== "count" && COUNT.askChange ? [delta, total] : [total];
+  return { type, delta, total, asks };
+}
+
 function build(mode, max) {
   const steps = [];
   let base;
@@ -26,17 +32,17 @@ function build(mode, max) {
   if (mode === "minus") {
     base = randInt(Math.max(COUNT.baseMin, COUNT.minResult + COUNT.deltaMin), Math.min(COUNT.baseMax, max));
     remove = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, base - COUNT.minResult));
-    steps.push({ type: "count", delta: base, total: base });
-    steps.push({ type: "remove", delta: remove, total: base - remove });
+    steps.push(step("count", base, base));
+    steps.push(step("remove", remove, base - remove));
   } else {
     base = randInt(COUNT.baseMin, Math.min(COUNT.baseMax, max - COUNT.deltaMin));
     add = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, max - base));
-    steps.push({ type: "count", delta: base, total: base });
-    steps.push({ type: "add", delta: add, total: base + add });
+    steps.push(step("count", base, base));
+    steps.push(step("add", add, base + add));
     if (mode === "both") {
       const sum = base + add;
       remove = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, sum - COUNT.minResult));
-      steps.push({ type: "remove", delta: remove, total: sum - remove });
+      steps.push(step("remove", remove, sum - remove));
     }
   }
   return {

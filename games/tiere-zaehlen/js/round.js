@@ -35,6 +35,7 @@ export function startRound() {
   const r = {
     task: makeTask(G.taskMode, G.max, prev),
     step: -1,
+    askIdx: 0, // welche Frage des Schritts gerade dran ist
     phase: "start", // "arrive", "ask", "right", "between", "finish"
     seq: 0,
     wait: null,
@@ -68,9 +69,7 @@ function nextStep() {
   const r = G.round;
   r.seq++;
   r.step++;
-  r.attempts = 0;
-  r.speechStarted = false;
-  r.spoken = false;
+  r.askIdx = 0;
   const step = r.task.steps[r.step];
   if (!step) {
     finishRound();
@@ -89,15 +88,13 @@ function nextStep() {
   }
 }
 
-// Die gehenden Tiere stehen erst durchsichtig und winkend auf ihrer "Weg"-Insel, dann laufen sie aus dem Bild.
+// Die gehenden Tiere stehen durchsichtig und winkend auf ihrer "Weg"-Insel und bleiben dort, bis das Kind
+// geantwortet hat (wie die neuen Tiere beim Dazu); erst nach der richtigen Antwort laufen sie aus dem Bild.
 function markLeaving(step) {
   const r = G.round;
   r.seq++;
   scene.markLeaving(step.delta);
-  schedule(r, ANIM.markTime, () => {
-    scene.startLeaving("minus");
-    until(r, () => !scene.leaving(), () => schedule(r, ANIM.afterArrive, ask));
-  });
+  schedule(r, ANIM.markTime, ask);
 }
 
 function ask() {
@@ -105,9 +102,14 @@ function ask() {
   r.seq++;
   r.phase = "ask";
   r.attempts = 0;
+  r.speechStarted = false;
+  r.spoken = false;
   const step = r.task.steps[r.step];
-  r.answer = step.total;
-  const { values, correctIndex } = makeChoices(step.total, G.max, lastCorrectIndex);
+  r.answer = step.asks[r.askIdx];
+  // Bei der Frage "wie viele gehen weg" dürfen die durchsichtigen Tiere mitgezählt werden, beim Rest nicht.
+  G.scene.tapMinus = step.type === "remove" && r.askIdx === 0 && step.asks.length > 1;
+  scene.resetCount();
+  const { values, correctIndex } = makeChoices(r.answer, G.max, lastCorrectIndex);
   lastCorrectIndex = correctIndex;
   cards.dealCards(values, correctIndex);
   sfx.tick();
@@ -187,15 +189,34 @@ function advance() {
   r.seq++;
   r.phase = "between";
   cards.dismissCards();
-  if (r.fest) {
-    r.fest = false;
-    celebrate(r);
-    schedule(r, STARS.festTime, () => {
-      G.stars = 0;
+  const step = r.task.steps[r.step];
+  const more = r.askIdx + 1 < step.asks.length; // noch eine Frage im selben Schritt?
+  const go = () => {
+    if (more) {
+      r.askIdx++;
+      ask();
+    } else {
       nextStep();
-    });
+    }
+  };
+  const next = () => {
+    if (r.fest) {
+      r.fest = false;
+      celebrate(r);
+      schedule(r, STARS.festTime, () => {
+        G.stars = 0;
+        go();
+      });
+    } else {
+      schedule(r, PAUSE.cardsOut, go);
+    }
+  };
+  // Nach der letzten Frage zu "Weg" gehen die markierten Tiere jetzt wirklich fort.
+  if (!more && step.type === "remove") {
+    scene.startLeaving("minus");
+    until(r, () => !scene.leaving(), next);
   } else {
-    schedule(r, PAUSE.cardsOut, nextStep);
+    next();
   }
 }
 

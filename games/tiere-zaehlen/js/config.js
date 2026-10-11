@@ -11,6 +11,7 @@ export const COUNT = {
   deltaMax: 5, // ... und höchstens so viele
   minResult: 1, // nach dem Wegnehmen bleibt mindestens ein Tier (0 wäre zu schwer zu erkennen)
   perRow: 5, // Tiere pro Reihe (Fünferreihen helfen beim Zählen)
+  askChange: true, // zuerst die Menge der neuen / gehenden Tiere fragen, dann erst die Summe / den Rest (false = nur das Ergebnis)
   retries: 12, // Versuche, bis eine andere Aufgabe als die letzte gefunden ist
 };
 
@@ -73,7 +74,7 @@ export const ANIM = {
   glide: 7, // wie schnell Tiere zu ihrem Platz gleiten, wenn sich die Anordnung ändert
   afterArrive: 0.45, // nach dem letzten Tier dauert es so lange, bis die Karten kommen
   mergeTime: 0.8, // die neuen Tiere gehen in die Hauptgruppe, bevor welche wegmüssen
-  markTime: 1.5, // gehende Tiere stehen so lange durchsichtig und winkend auf ihrer Insel
+  markTime: 0.9, // so lange dauert es, bis die gehenden Tiere durchsichtig und winkend auf ihrer Insel stehen und die Karten kommen (sie bleiben bis zur Antwort)
   markAlpha: 0.55, // Durchsichtigkeit der gehenden Tiere
   leaveGap: 0.14, // die Tiere gehen nacheinander los
   walkSpeed: 300, // Gehtempo aus dem Bild (Einheiten pro Sekunde)

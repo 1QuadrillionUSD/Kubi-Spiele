@@ -11,6 +11,7 @@ export function resetScene() {
     actors: [],
     scale: 0,
     rects: { main: newRect(), plus: newRect(), minus: newRect() },
+    tapMinus: false, // dürfen die gehenden Tiere mitgezählt werden? (nur bei der Frage, wie viele gehen)
     countN: 0, // laufende Zählzahl beim Antippen
     countIdle: 0,
   };
@@ -147,7 +148,7 @@ export function tapAnimal(x, y) {
   let best = null;
   let bestD = Infinity;
   for (const a of sc.actors) {
-    if (a.state !== "idle" || a.alpha < 0.6 || a.group === "minus") continue;
+    if (a.state !== "idle" || a.alpha < 0.5 || (a.group === "minus" && !sc.tapMinus)) continue;
     const dx = (x - a.x) / rx;
     const dy = (y - a.y) / ry;
     const d = dx * dx + dy * dy;
