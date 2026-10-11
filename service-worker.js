@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.15.0";
+const CACHE_VERSION = "meine-spiele-v1.16.0";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [
@@ -84,7 +84,46 @@ const FILES_TO_CACHE = [
   "./games/blasen-platzer/js/draw.js",
   "./games/blasen-platzer/js/scenery.js",
   "./games/blasen-platzer/js/gags.js",
-  "./games/blasen-platzer/js/progress.js"
+  "./games/blasen-platzer/js/progress.js",
+  "./games/blasen-platzer/js/find.js",
+  "./games/blasen-platzer/js/voice.js",
+  "./games/blasen-platzer/js/menu.js",
+  "./games/blasen-platzer/assets/voice/1.m4a",
+  "./games/blasen-platzer/assets/voice/2.m4a",
+  "./games/blasen-platzer/assets/voice/3.m4a",
+  "./games/blasen-platzer/assets/voice/4.m4a",
+  "./games/blasen-platzer/assets/voice/5.m4a",
+  "./games/blasen-platzer/assets/voice/6.m4a",
+  "./games/blasen-platzer/assets/voice/7.m4a",
+  "./games/blasen-platzer/assets/voice/8.m4a",
+  "./games/blasen-platzer/assets/voice/9.m4a",
+  "./games/blasen-platzer/assets/voice/10.m4a",
+  "./games/blasen-platzer/assets/voice/A.m4a",
+  "./games/blasen-platzer/assets/voice/B.m4a",
+  "./games/blasen-platzer/assets/voice/C.m4a",
+  "./games/blasen-platzer/assets/voice/D.m4a",
+  "./games/blasen-platzer/assets/voice/E.m4a",
+  "./games/blasen-platzer/assets/voice/F.m4a",
+  "./games/blasen-platzer/assets/voice/G.m4a",
+  "./games/blasen-platzer/assets/voice/H.m4a",
+  "./games/blasen-platzer/assets/voice/I.m4a",
+  "./games/blasen-platzer/assets/voice/J.m4a",
+  "./games/blasen-platzer/assets/voice/K.m4a",
+  "./games/blasen-platzer/assets/voice/L.m4a",
+  "./games/blasen-platzer/assets/voice/M.m4a",
+  "./games/blasen-platzer/assets/voice/N.m4a",
+  "./games/blasen-platzer/assets/voice/O.m4a",
+  "./games/blasen-platzer/assets/voice/P.m4a",
+  "./games/blasen-platzer/assets/voice/Q.m4a",
+  "./games/blasen-platzer/assets/voice/R.m4a",
+  "./games/blasen-platzer/assets/voice/S.m4a",
+  "./games/blasen-platzer/assets/voice/T.m4a",
+  "./games/blasen-platzer/assets/voice/U.m4a",
+  "./games/blasen-platzer/assets/voice/V.m4a",
+  "./games/blasen-platzer/assets/voice/W.m4a",
+  "./games/blasen-platzer/assets/voice/X.m4a",
+  "./games/blasen-platzer/assets/voice/Y.m4a",
+  "./games/blasen-platzer/assets/voice/Z.m4a"
 ];
 
 const asCacheUrl = (path) => new URL(path, self.registration.scope).toString();
