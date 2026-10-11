@@ -11,13 +11,14 @@ export const COUNT = {
   deltaMax: 5, // ... und höchstens so viele
   minResult: 1, // nach dem Wegnehmen bleibt mindestens ein Tier (0 wäre zu schwer zu erkennen)
   perRow: 5, // Tiere pro Reihe (Fünferreihen helfen beim Zählen)
+  minusShare: 0.25, // bei "Beides" ist so oft eine Runde Minus (sonst Plus); nie zweimal Minus hintereinander
   askChange: true, // zuerst die Menge der neuen / gehenden Tiere fragen, dann erst die Summe / den Rest (false = nur das Ergebnis)
   retries: 12, // Versuche, bis eine andere Aufgabe als die letzte gefunden ist
 };
 
 // Aufgabenfolge im Start-Panel
 export const TASK_MODES = ["plus", "minus", "both"];
-export const TASK_DEFAULT = "both"; // Plus und Minus nacheinander in jeder Runde
+export const TASK_DEFAULT = "both"; // meistens Plus, ab und zu Minus (jede Rechnung für sich)
 
 // Tierarten (alle sind in animals.js gezeichnet)
 export const ANIMALS = ["katze", "hund", "huhn", "kuh", "schwein", "frosch", "elefant", "ente", "hase"];
@@ -50,11 +51,20 @@ export const CARDS = {
   sideMin: 84, // ... mindestens so breit (Einheiten)
   sideMax: 150, // ... höchstens so breit
   sideAspect: 0.72, // Höhe : Breite einer solchen Karte
-  sideMaxHeight: 0.42, // alle drei Karten zusammen nehmen höchstens so viel der Szenenhöhe ein (Querformat ist niedrig)
+  sideMaxHeight: 0.4, // alle drei Karten zusammen nehmen höchstens so viel der Szenenhöhe ein (Querformat ist niedrig)
   sideGap: 8, // Abstand zwischen den drei Karten der Spalte
-  labelAlpha: 1, // Deckkraft der stehenbleibenden, schon beantworteten Zahl neben der Gruppe
   fontShare: 0.62, // Schriftgröße im Verhältnis zur Kartenhöhe
   outline: 0.14, // Dicke des Zahlenumrisses im Verhältnis zur Schriftgröße
+};
+
+// ------------------------------------------------------------ Rechenzeile
+// Oben im Bild steht die Rechnung, die sich mit jeder richtigen Antwort füllt: [Ausgang] + [dazu] = [Ergebnis]
+export const EQUATION = {
+  height: 62, // Höhe der Kästchen (Einheiten)
+  gap: 10, // Abstand zwischen den Kästchen
+  signWidth: 40, // Breite von Plus, Minus und Gleichheitszeichen
+  below: 12, // Abstand zur Szene darunter
+  bounce: 0.5, // so lange hüpft ein Kästchen, wenn es gefüllt wird
 };
 
 // ------------------------------------------------------------ Anordnung
@@ -81,8 +91,7 @@ export const ANIM = {
   enterFrom: 150, // neue Tiere hüpfen von so weit rechts außerhalb der Szene herein (Einheiten)
   glide: 7, // wie schnell Tiere zu ihrem Platz gleiten, wenn sich die Anordnung ändert
   afterArrive: 0.45, // nach dem letzten Tier dauert es so lange, bis die Karten kommen
-  mergeTime: 0.8, // die neuen Tiere gehen in die Hauptgruppe, bevor welche wegmüssen
-  markTime: 0.9, // so lange dauert es, bis die gehenden Tiere durchsichtig und winkend auf ihrer Insel stehen und die Karten kommen (sie bleiben bis zur Antwort)
+  markTime: 0.9, // so lange dauert es, bis die gehenden Tiere durchsichtig, winkend und rot markiert dastehen und die Karten kommen (sie bleiben bis zur Antwort)
   markAlpha: 0.55, // Durchsichtigkeit der gehenden Tiere
   leaveGap: 0.14, // die Tiere gehen nacheinander los
   walkSpeed: 300, // Gehtempo aus dem Bild (Einheiten pro Sekunde)

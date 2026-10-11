@@ -2,21 +2,29 @@
 import { pick, randInt, shuffle } from "./state.js";
 import { COUNT, CARDS, ANIMALS } from "./config.js";
 
-// Eine Runde besteht aus Schritten. Jeder Schritt hat eine oder zwei Fragen (asks):
-//   count  = Grundmenge zählen            asks: [Grundmenge]
-//   add    = es kommen Tiere dazu         asks: [wie viele kommen dazu, Summe]
-//   remove = es gehen Tiere weg           asks: [wie viele gehen weg, Rest]
-// (die erste Frage bei add/remove entfällt, wenn COUNT.askChange false ist)
-// Plus: count, add. Minus: count, remove. Beides: count, add, remove.
+// Jede Runde ist genau eine Rechnung für sich, ohne Bezug zur Runde davor:
+//   Plus:  Ausgangsmenge zählen, wie viele kommen dazu, Summe.
+//   Minus: Ausgangsmenge zählen, wie viele gehen weg, Rest.
+// Jeder Schritt hat Fragen (asks); die Zwischenfrage entfällt, wenn COUNT.askChange false ist.
+//   count  = Ausgangsmenge          asks: [Ausgangsmenge]
+//   add    = es kommen Tiere dazu   asks: [wie viele kommen dazu, Summe]
+//   remove = es gehen Tiere weg     asks: [wie viele gehen weg, Rest]
+// Bei "both" ist es meistens Plus (COUNT.minusShare), nie zweimal Minus hintereinander.
 export function makeTask(mode, max, prev = null) {
   let task = null;
   for (let i = 0; i < COUNT.retries; i++) {
-    task = build(mode, max);
+    task = build(opFor(mode, prev), max);
     if (!prev || (task.sig !== prev.sig && task.base !== prev.base && task.kind !== prev.kind)) return task;
   }
   // Notlösung (kaum möglich): wenigstens Aufgabe und Tierart ändern
-  while (prev && (task.sig === prev.sig || task.kind === prev.kind)) task = build(mode, max);
+  while (prev && (task.sig === prev.sig || task.kind === prev.kind)) task = build(opFor(mode, prev), max);
   return task;
+}
+
+function opFor(mode, prev) {
+  if (mode === "plus" || mode === "minus") return mode;
+  if (prev?.op === "minus") return "plus";
+  return Math.random() < COUNT.minusShare ? "minus" : "plus";
 }
 
 function step(type, delta, total) {
@@ -24,35 +32,27 @@ function step(type, delta, total) {
   return { type, delta, total, asks };
 }
 
-function build(mode, max) {
-  const steps = [];
+function build(op, max) {
   let base;
-  let add = 0;
-  let remove = 0;
-  if (mode === "minus") {
+  let delta;
+  const steps = [];
+  if (op === "minus") {
     base = randInt(Math.max(COUNT.baseMin, COUNT.minResult + COUNT.deltaMin), Math.min(COUNT.baseMax, max));
-    remove = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, base - COUNT.minResult));
-    steps.push(step("count", base, base));
-    steps.push(step("remove", remove, base - remove));
+    delta = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, base - COUNT.minResult));
+    steps.push(step("count", base, base), step("remove", delta, base - delta));
   } else {
     base = randInt(COUNT.baseMin, Math.min(COUNT.baseMax, max - COUNT.deltaMin));
-    add = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, max - base));
-    steps.push(step("count", base, base));
-    steps.push(step("add", add, base + add));
-    if (mode === "both") {
-      const sum = base + add;
-      remove = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, sum - COUNT.minResult));
-      steps.push(step("remove", remove, sum - remove));
-    }
+    delta = randInt(COUNT.deltaMin, Math.min(COUNT.deltaMax, max - base));
+    steps.push(step("count", base, base), step("add", delta, base + delta));
   }
   return {
-    mode,
+    op,
     kind: pick(ANIMALS),
     base,
-    add,
-    remove,
+    delta,
+    result: steps[1].total,
     steps,
-    sig: `${mode}:${base}:${add}:${remove}`,
+    sig: `${op}:${base}:${delta}`,
   };
 }
 

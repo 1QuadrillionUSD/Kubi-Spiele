@@ -1,7 +1,7 @@
 // Aufteilung des Spielfelds: Szene für die Tiere, Plätze für die Antwortkarten.
 // Hochformat: Karten in einer Reihe unten. Querformat: Karten in einer Spalte rechts.
 import { G, clamp } from "./state.js";
-import { CARDS, LAYOUT } from "./config.js";
+import { CARDS, EQUATION, LAYOUT } from "./config.js";
 
 export function computeLayout() {
   const { w, h, U } = G;
@@ -30,6 +30,12 @@ export function computeLayout() {
     panel = { x: x0 - m * 0.7, y: y - m * 0.7, w: total + m * 1.4, h: cardH + m * 1.4 };
     area = { x: 0, y: LAYOUT.topMargin * U, w, h: y - m * 1.2 - LAYOUT.topMargin * U };
   }
+  // Rechenzeile oben, die Szene mit den Tieren darunter
+  const eqH = EQUATION.height * U;
+  const eqBelow = EQUATION.below * U + eqH;
+  const eqY = area.y;
+  area = { ...area, y: area.y + eqBelow, h: area.h - eqBelow };
+
   // Kartenspalte neben den Tiergruppen: die Szene wird entsprechend schmaler
   const sideW = clamp(area.w * CARDS.sideShare, CARDS.sideMin * U, CARDS.sideMax * U);
   const sideGap = CARDS.sideGap * U;
@@ -42,6 +48,7 @@ export function computeLayout() {
     total: sideH * CARDS.count + sideGap * (CARDS.count - 1),
   };
   area = { ...area, w: area.w - sideW - m * 1.5 };
-  G.layout = { landscape, slots, panel, area, side };
+  const eq = { cx: area.x + area.w / 2, y: eqY, h: eqH };
+  G.layout = { landscape, slots, panel, area, side, eq };
   return G.layout;
 }

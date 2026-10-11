@@ -1,7 +1,7 @@
 // Ablauf einer Runde: Tiere kommen, Frage, Antwort, Ansage, nächster Schritt, am Ende neue Tierart.
 // Es gibt kein Verlieren: Falsche Antworten kosten nichts, die richtige darf immer nachgeholt werden.
 import { G, later, rand } from "./state.js";
-import { ANIM, CARDS, PAUSE, STARS } from "./config.js";
+import { ANIM, CARDS, EQUATION, PAUSE, STARS } from "./config.js";
 import { makeTask, makeChoices } from "./tasks.js";
 import * as scene from "./scene.js";
 import * as cards from "./cards.js";
@@ -46,12 +46,16 @@ export function startRound() {
     spoken: false,
   };
   G.round = r;
+  const op = r.task.steps[1].type;
+  G.equation = { op, a: null, b: null, c: null, bounce: { a: 0, b: 0, c: 0 } };
   scene.resetScene();
   cards.clearCards();
   nextStep();
 }
 
-export function updateRound() {
+export function updateRound(dt = 0) {
+  const eq = G.equation;
+  if (eq) for (const key of ["a", "b", "c"]) eq.bounce[key] = Math.max(0, eq.bounce[key] - dt);
   const r = G.round;
   if (!r?.wait) return;
   if (r.wait.seq !== r.seq) {
@@ -70,8 +74,6 @@ function nextStep() {
   r.seq++;
   r.step++;
   r.askIdx = 0;
-  // Die Zahl der Grundmenge bleibt während "dazu" / "weg" neben den Tieren stehen, alles andere verschwindet.
-  cards.clearLabels(r.step === 1 ? "main" : null);
   const step = r.task.steps[r.step];
   if (!step) {
     finishRound();
@@ -82,21 +84,11 @@ function nextStep() {
     const group = step.type === "count" ? "main" : "plus";
     const seconds = scene.spawnGroup(group, step.delta, r.task.kind);
     schedule(r, seconds + ANIM.afterArrive, ask);
-  } else if (scene.count("plus")) {
-    scene.mergePlus();
-    schedule(r, ANIM.mergeTime, () => markLeaving(step));
   } else {
-    markLeaving(step);
+    // Minus: ein Teil der Ausgangsmenge wird markiert und bleibt bis zur Antwort stehen.
+    scene.markLeaving(step.delta);
+    schedule(r, ANIM.markTime, ask);
   }
-}
-
-// Die gehenden Tiere stehen durchsichtig und winkend auf ihrer "Weg"-Insel und bleiben dort, bis das Kind
-// geantwortet hat (wie die neuen Tiere beim Dazu); erst nach der richtigen Antwort laufen sie aus dem Bild.
-function markLeaving(step) {
-  const r = G.round;
-  r.seq++;
-  scene.markLeaving(step.delta);
-  schedule(r, ANIM.markTime, ask);
 }
 
 function ask() {
@@ -108,15 +100,15 @@ function ask() {
   r.spoken = false;
   const step = r.task.steps[r.step];
   r.answer = step.asks[r.askIdx];
-  // Bei der Frage "wie viele gehen weg" dürfen die durchsichtigen Tiere mitgezählt werden, beim Rest nicht.
-  G.scene.tapMinus = step.type === "remove" && r.askIdx === 0 && step.asks.length > 1;
+  // Bei der Frage "wie viele gehen weg" dürfen die markierten Tiere mitgezählt werden, beim Rest nicht.
+  G.scene.tapMarked = step.type === "remove" && r.askIdx === 0 && step.asks.length > 1;
   scene.resetCount();
   const { values, correctIndex } = makeChoices(r.answer, G.max, lastCorrectIndex);
   lastCorrectIndex = correctIndex;
-  // Grundmenge und "wie viele dazu / weg" stehen neben der Gruppe, die gezählt wird; das Ergebnis liegt unten.
+  // Ausgangsmenge und "wie viele dazu / weg" stehen neben der Gruppe, die gezählt wird; das Ergebnis liegt unten.
   let anchor = null;
   if (step.type === "count") anchor = "main";
-  else if (step.asks.length > 1 && r.askIdx === 0) anchor = step.type === "add" ? "plus" : "minus";
+  else if (step.asks.length > 1 && r.askIdx === 0) anchor = step.type === "add" ? "plus" : "main";
   cards.dealCards(values, correctIndex, anchor);
   sfx.tick();
 }
@@ -144,6 +136,7 @@ function right(card) {
   r.seq++;
   r.phase = "right";
   cards.markRight(card);
+  fillEquation(r, card.value);
   sfx.rightChime();
   const slot = cards.cardRect(card);
   rightBurst(slot.x + slot.w / 2, slot.y + slot.h / 2, STARS.rightConfetti, STARS.rightStars);
@@ -151,6 +144,14 @@ function right(card) {
   G.stars++;
   r.fest = G.stars >= STARS.festEvery;
   schedule(r, PAUSE.beforeSpeech, speak);
+}
+
+// Die richtige Antwort wandert in die Rechenzeile: Ausgang, dann dazu / weg, dann Ergebnis.
+function fillEquation(r, value) {
+  const step = r.task.steps[r.step];
+  const key = step.type === "count" ? "a" : r.askIdx === 0 && step.asks.length > 1 ? "b" : "c";
+  G.equation[key] = value;
+  G.equation.bounce[key] = EQUATION.bounce;
 }
 
 // Zahl erst deutsch, dann slowakisch; danach geht es von allein weiter.
@@ -219,7 +220,7 @@ function advance() {
   };
   // Nach der letzten Frage zu "Weg" gehen die markierten Tiere jetzt wirklich fort.
   if (!more && step.type === "remove") {
-    scene.startLeaving("minus");
+    scene.leaveMarked();
     until(r, () => !scene.leaving(), next);
   } else {
     next();

@@ -13,7 +13,7 @@ export const G = {
   scene: null, // Tiere und Inseln (siehe scene.js)
   round: null, // laufende Runde (siehe round.js)
   cards: [], // Antwortkarten (siehe cards.js)
-  labels: [], // schon beantwortete Zahlen, die neben ihrer Gruppe stehen bleiben
+  equation: null, // Rechenzeile oben: { op, a, b, c, bounce } (siehe round.js)
   panelAlpha: 0, // Sichtbarkeit der Ablage unter den Karten unten
   particles: [],
   banner: null,

@@ -4,7 +4,7 @@ import { registerServiceWorker } from "../../../shared/utils/pwa.js";
 import { G, clamp, runLater } from "./state.js";
 import { STARS } from "./config.js";
 import { computeLayout } from "./layout.js";
-import { buildBackground, drawIslands, drawActors, drawCounts, drawCardPanel, drawCards } from "./draw.js";
+import { buildBackground, drawIslands, drawMarks, drawActors, drawCounts, drawEquation, drawCardPanel, drawCards } from "./draw.js";
 import { updateScene, snapScene, tapAnimal } from "./scene.js";
 import { updateCards, cardAt } from "./cards.js";
 import { startRound, resetRound, updateRound, pressCard, resumeRound, onMuteChange } from "./round.js";
@@ -247,7 +247,7 @@ function loop(timestamp) {
 function update(dt) {
   G.time += dt;
   runLater(dt);
-  updateRound();
+  updateRound(dt);
   updateScene(dt);
   updateCards(dt);
   updateEffects(dt);
@@ -259,7 +259,9 @@ function update(dt) {
 function draw() {
   if (!G.bg) return;
   ctx.drawImage(G.bg, 0, 0, G.w, G.h);
+  drawEquation(ctx);
   drawIslands(ctx);
+  drawMarks(ctx);
   drawActors(ctx);
   drawCounts(ctx);
   drawCardPanel(ctx);

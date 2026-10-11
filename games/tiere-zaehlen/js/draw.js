@@ -1,6 +1,6 @@
 // Zeichnen: Hintergrund, Inseln, Tiere, Zählzahlen und Antwortkarten.
 import { G, TAU, clamp } from "./state.js";
-import { ANIM, CARDS, LAYOUT, TAP } from "./config.js";
+import { ANIM, CARDS, EQUATION, LAYOUT, TAP } from "./config.js";
 import { drawAnimal } from "./animals.js";
 import { hopOffset } from "./scene.js";
 import { cardRect } from "./cards.js";
@@ -12,7 +12,6 @@ const INK = "#17324d";
 const THEMES = {
   main: { fill: "#fffdf0", edge: "#ffffff", shade: "rgba(23, 80, 40, 0.20)", sign: null },
   plus: { fill: "#fff1b3", edge: "#ffc83d", shade: "rgba(120, 80, 0, 0.22)", sign: "#3fbf6e" },
-  minus: { fill: "#ffdcd7", edge: "#ff8f80", shade: "rgba(130, 40, 30, 0.22)", sign: "#ff6b5e" },
 };
 
 // ------------------------------------------------------------- Hintergrund
@@ -95,7 +94,7 @@ export function buildBackground() {
 export function drawIslands(ctx) {
   const sc = G.scene;
   if (!sc) return;
-  for (const name of ["main", "plus", "minus"]) {
+  for (const name of ["main", "plus"]) {
     const r = sc.rects[name];
     if (r.alpha < 0.02 || r.w < 4) continue;
     const th = THEMES[name];
@@ -115,6 +114,31 @@ export function drawIslands(ctx) {
     if (th.sign) drawSign(ctx, name, r.x + 6 * s, r.y + 6 * s, LAYOUT.signSize * s, th.sign);
     ctx.restore();
   }
+}
+
+// Rote Unterlage und "–" hinter den Tieren, die gleich weggehen (sie bleiben in ihrer Gruppe stehen).
+export function drawMarks(ctx) {
+  const sc = G.scene;
+  if (!sc) return;
+  const s = sc.scale || 1;
+  const marked = sc.actors.filter((a) => a.marked && a.state !== "leave").sort((a, b) => a.pos - b.pos);
+  if (!marked.length) return;
+  const w = LAYOUT.cellW * s * 0.94;
+  const h = LAYOUT.cellH * s * 0.94;
+  ctx.save();
+  for (const a of marked) {
+    ctx.globalAlpha = clamp(a.alpha / ANIM.markAlpha, 0, 1);
+    roundRect(ctx, a.tx - w / 2, a.ty - h / 2, w, h, 20 * s);
+    ctx.fillStyle = "rgba(255, 128, 112, 0.30)";
+    ctx.fill();
+    ctx.lineWidth = 4 * s;
+    ctx.strokeStyle = "#ff8f80";
+    ctx.stroke();
+  }
+  const first = marked[0];
+  ctx.globalAlpha = 1;
+  drawSign(ctx, "minus", first.tx - w / 2 + 4 * s, first.ty - h / 2 + 4 * s, LAYOUT.signSize * s, "#ff6b5e");
+  ctx.restore();
 }
 
 // Rundes "+" oder "–" an der Ecke der Insel: ohne Schrift, damit es jedes Kind erkennt.
@@ -269,7 +293,7 @@ export function drawCardPanel(ctx) {
 export function drawCards(ctx) {
   if (!G.layout || !G.scene) return;
   const U = G.U;
-  for (const card of [...G.labels, ...G.cards]) {
+  for (const card of G.cards) {
     if (card.age <= 0) continue;
     const slot = cardRect(card);
     const appear = clamp(card.age / CARDS.appearTime, 0, 1);
@@ -282,7 +306,6 @@ export function drawCards(ctx) {
       dy = card.out * 36 * U;
     }
     if (card.state === "dim") alpha *= CARDS.dimAlpha;
-    if (card.label) alpha *= G.scene.rects[card.anchor].alpha * CARDS.labelAlpha; // verschwindet mit der Insel
     if (card.bounce > 0) sc *= 1 + Math.sin(card.bounce * Math.PI) * 0.14;
     sc *= 1 - 0.06 * card.press;
     let pulse = 0;
@@ -344,4 +367,106 @@ export function drawCards(ctx) {
     ctx.fillText(String(card.value), 0, size * 0.05);
     ctx.restore();
   }
+}
+
+// ------------------------------------------------------------- Rechenzeile
+
+// [Ausgang] +/– [dazu / weg] = [Ergebnis]: leere Kästchen, die sich mit jeder richtigen Antwort grün füllen.
+export function drawEquation(ctx) {
+  const eq = G.equation;
+  const L = G.layout?.eq;
+  if (!eq || !L) return;
+  const U = G.U;
+  const h = L.h;
+  const gap = EQUATION.gap * U;
+  const sw = EQUATION.signWidth * U;
+  const total = h * 3 + sw * 2 + gap * 4;
+  let x = L.cx - total / 2;
+  const slots = [
+    { kind: "box", key: "a" },
+    { kind: eq.op === "remove" ? "minus" : "plus" },
+    { kind: "box", key: "b" },
+    { kind: "equals" },
+    { kind: "box", key: "c" },
+  ];
+  for (const slot of slots) {
+    if (slot.kind === "box") {
+      drawEquationBox(ctx, x, L.y, h, h, eq[slot.key], slot.key, eq.bounce?.[slot.key] || 0);
+      x += h + gap;
+    } else {
+      drawOperator(ctx, slot.kind, x + sw / 2, L.y + h / 2, sw * 0.42, h);
+      x += sw + gap;
+    }
+  }
+}
+
+function drawEquationBox(ctx, x, y, w, h, value, key, bounce) {
+  const U = G.U;
+  const filled = value !== null && value !== undefined;
+  const pop = 1 + Math.sin(clamp(bounce / EQUATION.bounce, 0, 1) * Math.PI) * 0.18;
+  ctx.save();
+  ctx.translate(x + w / 2, y + h / 2);
+  ctx.scale(pop, pop);
+  roundRect(ctx, -w / 2, -h / 2, w, h, 16 * U);
+  if (filled) {
+    const grad = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+    grad.addColorStop(0, "#c4f7d3");
+    grad.addColorStop(1, "#5fd48a");
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.lineWidth = 4 * U;
+    ctx.strokeStyle = "rgba(255, 254, 250, 0.95)";
+    ctx.stroke();
+    const size = Math.round(h * 0.66 * (String(value).length > 1 ? 0.86 : 1));
+    ctx.font = `900 ${size}px ${FONT}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = size * 0.14;
+    ctx.strokeStyle = "#1b8a48";
+    ctx.strokeText(String(value), 0, size * 0.05);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(String(value), 0, size * 0.05);
+  } else {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+    ctx.fill();
+    ctx.lineWidth = 4 * U;
+    ctx.setLineDash([10 * U, 8 * U]);
+    ctx.strokeStyle = "rgba(29, 111, 163, 0.7)";
+    ctx.stroke();
+    ctx.setLineDash([]);
+    if (key === "c") {
+      const size = Math.round(h * 0.6);
+      ctx.font = `900 ${size}px ${FONT}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(29, 111, 163, 0.55)";
+      ctx.fillText("?", 0, size * 0.05);
+    }
+  }
+  ctx.restore();
+}
+
+// Plus, Minus und Gleichheitszeichen aus dicken Strichen (ohne Schrift)
+function drawOperator(ctx, kind, cx, cy, r, h) {
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineWidth = h * 0.13;
+  ctx.strokeStyle = kind === "minus" ? "#e0554a" : kind === "plus" ? "#2f9a55" : "#1d6fa3";
+  ctx.beginPath();
+  if (kind === "equals") {
+    ctx.moveTo(cx - r, cy - h * 0.1);
+    ctx.lineTo(cx + r, cy - h * 0.1);
+    ctx.moveTo(cx - r, cy + h * 0.1);
+    ctx.lineTo(cx + r, cy + h * 0.1);
+  } else {
+    ctx.moveTo(cx - r, cy);
+    ctx.lineTo(cx + r, cy);
+    if (kind === "plus") {
+      ctx.moveTo(cx, cy - r);
+      ctx.lineTo(cx, cy + r);
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
 }

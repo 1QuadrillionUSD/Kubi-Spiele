@@ -1,5 +1,6 @@
 // Die Tiere auf ihren Inseln: Anordnung in Fünferreihen, Hüpfen herein, Gehen heraus, Zählen per Antippen.
-// Gruppen: "main" = Hauptgruppe, "plus" = neu dazugekommen (eigene Insel), "minus" = gehen gleich weg (eigene Insel).
+// Gruppen: "main" = Ausgangsmenge, "plus" = neu dazugekommen (eigene Insel). Gehende Tiere bleiben in der Hauptgruppe
+// und werden dort rot markiert, durchsichtig und winkend (marked), bis das Kind geantwortet hat.
 import { G, TAU, rand, clamp } from "./state.js";
 import { ANIM, COUNT, LAYOUT, TAP } from "./config.js";
 import * as sfx from "./audio.js";
@@ -10,8 +11,8 @@ export function resetScene() {
   G.scene = {
     actors: [],
     scale: 0,
-    rects: { main: newRect(), plus: newRect(), minus: newRect() },
-    tapMinus: false, // dürfen die gehenden Tiere mitgezählt werden? (nur bei der Frage, wie viele gehen)
+    rects: { main: newRect(), plus: newRect() },
+    tapMarked: false, // dürfen die markierten (gehenden) Tiere mitgezählt werden? (nur bei der Frage, wie viele gehen)
     countN: 0, // laufende Zählzahl beim Antippen
     countIdle: 0,
   };
@@ -22,6 +23,7 @@ function makeActor(kind, group, pos, delay, from) {
     id: G.nextId++,
     kind,
     group,
+    marked: false, // soll weggehen: durchsichtig, winkend, rot hinterlegt
     pos, // fester Platz in der Gruppe (0 = erster)
     state: "in", // "in" hüpft herein, "idle" steht, "leave" geht weg (danach wird das Tier entfernt)
     from, // "top" (Grundmenge) oder "right" (neue Tiere)
@@ -68,53 +70,43 @@ export function spawnGroup(group, n, kind) {
   return (n - 1) * ANIM.hopGap + ANIM.hopTime;
 }
 
-// Die neuen Tiere reihen sich in die Hauptgruppe ein.
-export function mergePlus() {
-  resetCount();
-  const mainN = Math.max(-1, ...inGroup("main").map((a) => a.pos)) + 1;
-  const moved = inGroup("plus").sort((a, b) => a.pos - b.pos);
-  moved.forEach((a, i) => {
-    a.group = "main";
-    a.pos = mainN + i;
-  });
-  return moved.length;
-}
-
-// Die letzten n Tiere der Hauptgruppe kommen auf die "Weg"-Insel: durchsichtig und winkend.
+// Die letzten n Tiere der Hauptgruppe sollen weggehen: sie werden durchsichtig, winken und bekommen eine rote Unterlage.
 export function markLeaving(n) {
   resetCount();
   const list = n > 0 ? inGroup("main").sort((a, b) => a.pos - b.pos).slice(-n) : [];
-  list.forEach((a, i) => {
-    a.group = "minus";
-    a.pos = i;
+  for (const a of list) {
+    a.marked = true;
     a.alphaTarget = ANIM.markAlpha;
     a.waveHold = true;
-  });
+  }
   return list.length;
 }
 
-// Alle Tiere einer Gruppe gehen nacheinander aus dem Bild. gap = Abstand zwischen zwei Tieren.
-export function startLeaving(group, gap = ANIM.leaveGap) {
+// Die markierten Tiere gehen nacheinander aus dem Bild.
+export function leaveMarked(gap = ANIM.leaveGap) {
   resetCount();
-  inGroup(group)
+  G.scene.actors
+    .filter((a) => a.marked)
     .sort((a, b) => a.pos - b.pos)
     .forEach((a, i) => {
       a.leaveDelay = i * gap;
-      a.waveHold = true;
-      a.alphaTarget = group === "minus" ? ANIM.markAlpha : 1;
     });
 }
 
-// Am Rundenende gehen alle.
+// Am Rundenende winken alle und gehen dann.
 export function farewell() {
   resetCount();
   for (const a of G.scene.actors) a.waveHold = true;
 }
 
 export function leaveAll() {
-  startLeaving("main", ANIM.leaveGap * 0.5);
-  startLeaving("plus", ANIM.leaveGap * 0.5);
-  startLeaving("minus", ANIM.leaveGap * 0.5);
+  G.scene.actors
+    .slice()
+    .sort((a, b) => a.pos - b.pos)
+    .forEach((a, i) => {
+      if (a.leaveDelay < 0) a.leaveDelay = i * ANIM.leaveGap * 0.5;
+      if (!a.marked) a.alphaTarget = 1;
+    });
 }
 
 // Sind alle Tiere gelandet (keiner hüpft mehr herein)?
@@ -148,7 +140,7 @@ export function tapAnimal(x, y) {
   let best = null;
   let bestD = Infinity;
   for (const a of sc.actors) {
-    if (a.state !== "idle" || a.alpha < 0.5 || (a.group === "minus" && !sc.tapMinus)) continue;
+    if (a.state !== "idle" || a.alpha < 0.5 || (a.marked && !sc.tapMarked)) continue;
     const dx = (x - a.x) / rx;
     const dy = (y - a.y) / ry;
     const d = dx * dx + dy * dy;
@@ -184,13 +176,13 @@ function layout(dt, snap) {
   const { cellW, cellH, pad, gap } = LAYOUT;
 
   const dims = {};
-  for (const group of ["main", "plus", "minus"]) {
+  for (const group of ["main", "plus"]) {
     const list = inGroup(group);
     const n = list.length ? Math.max(...list.map((a) => a.pos)) + 1 : 0;
     const resting = list.some((a) => a.state !== "leave");
     dims[group] = { list, n, cols: Math.min(n, per), rows: Math.ceil(n / per), show: resting };
   }
-  const second = dims.minus.n ? dims.minus : dims.plus;
+  const second = dims.plus;
   const mainUnits = dims.main.n ? dims.main.rows * cellH + 2 * pad : 0;
   const secUnits = second.n ? cellH + 2 * pad : 0;
   const blocks = (s) =>
@@ -238,13 +230,7 @@ function layout(dt, snap) {
   };
   const secY = yTop + (mainBlock ? mainBlock + gap * s : 0);
   place("main", dims.main, yTop, mainBlock, mainUnits);
-  if (second === dims.minus) {
-    sc.rects.plus.talpha = 0;
-    place("minus", dims.minus, secY, secBlock, secUnits);
-  } else {
-    sc.rects.minus.talpha = 0;
-    place("plus", dims.plus, secY, secBlock, secUnits);
-  }
+  place("plus", dims.plus, secY, secBlock, secUnits);
 
   const k = snap ? 1 : 1 - Math.exp(-dt * ANIM.islandEase);
   for (const r of Object.values(sc.rects)) {
@@ -355,7 +341,7 @@ export function updateScene(dt) {
           a.state = "leave";
           a.leaveDelay = -1;
           a.walkT = 0;
-          if (a.group === "main") a.alphaTarget = 1;
+          if (!a.marked) a.alphaTarget = 1;
           sfx.swish();
         }
       }
