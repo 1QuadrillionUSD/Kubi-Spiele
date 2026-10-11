@@ -1,4 +1,4 @@
-// Auswahl im Start-Panel: Aufgabenfolge (Plus / Minus / Beides) und Zahlenraum (bis 10 / bis 15).
+// Auswahl im Start-Panel: Aufgaben (Addition / Addition und Subtraktion) und Zahlenraum (bis 10 / bis 15).
 // Die Wahl wird kurz in localStorage gemerkt.
 import { COUNT, TASK_DEFAULT } from "./config.js";
 
@@ -6,9 +6,8 @@ const KEY_TASKS = "meine-spiele:tiere-zaehlen:tasks";
 const KEY_RANGE = "meine-spiele:tiere-zaehlen:range";
 
 const TASKS = [
-  { id: "plus", icon: "➕", name: "Plus" },
-  { id: "minus", icon: "➖", name: "Minus" },
-  { id: "both", icon: "➕➖", name: "Beides" },
+  { id: "plus", icon: "➕", name: "Addition" },
+  { id: "both", icon: "➕➖", name: "Addition und Subtraktion" },
 ];
 const RANGES = COUNT.ranges.map((n) => ({ id: String(n), icon: "\u{1F522}", name: `bis ${n}` }));
 

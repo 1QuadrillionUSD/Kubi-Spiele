@@ -11,14 +11,16 @@ export const COUNT = {
   deltaMax: 5, // ... und höchstens so viele
   minResult: 1, // nach dem Wegnehmen bleibt mindestens ein Tier (0 wäre zu schwer zu erkennen)
   perRow: 5, // Tiere pro Reihe (Fünferreihen helfen beim Zählen)
-  minusShare: 0.25, // bei "Beides" ist so oft eine Runde Minus (sonst Plus); nie zweimal Minus hintereinander
+  minusShare: 0.25, // bei "Addition und Subtraktion" ist so oft eine Runde Minus (sonst Plus); nie zweimal Minus hintereinander
   askChange: true, // zuerst die Menge der neuen / gehenden Tiere fragen, dann erst die Summe / den Rest (false = nur das Ergebnis)
   retries: 12, // Versuche, bis eine andere Aufgabe als die letzte gefunden ist
 };
 
 // Aufgabenfolge im Start-Panel
-export const TASK_MODES = ["plus", "minus", "both"];
-export const TASK_DEFAULT = "both"; // meistens Plus, ab und zu Minus (jede Rechnung für sich)
+// "plus" = nur Addition, "both" = meistens Addition, ab und zu Subtraktion (jede Rechnung für sich).
+// ("minus" = nur Subtraktion wird von tasks.js unterstützt, steht aber nicht zur Auswahl.)
+export const TASK_MODES = ["plus", "both"];
+export const TASK_DEFAULT = "plus"; // Standard: nur Addition (Subtraktion ist schwerer)
 
 // Tierarten (alle sind in animals.js gezeichnet)
 export const ANIMALS = ["katze", "hund", "huhn", "kuh", "schwein", "frosch", "elefant", "ente", "hase"];
