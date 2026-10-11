@@ -834,3 +834,117 @@ h1 {
     font-size: clamp(1.4rem, 8.5cqw, 3rem);
   }
 }
+
+/* Tiere-zählen-Kachel */
+.count-tile {
+  background: linear-gradient(160deg, #8fd8f7 0%, #b7ec8f 55%, #6fcb55 100%);
+}
+
+.mini-count {
+  position: relative;
+  width: min(88%, 380px);
+  aspect-ratio: 1;
+}
+
+.mini-count-island {
+  position: absolute;
+  left: 6%;
+  top: 8%;
+  width: 62%;
+  height: 34%;
+  border: 5px solid #ffffff;
+  border-radius: 22px;
+  background: #fffdf0;
+  box-shadow: 0 7px 0 rgba(23, 80, 40, 0.2);
+}
+
+.mini-count-island.plus {
+  top: 52%;
+  left: 14%;
+  width: 46%;
+  border-color: #ffc83d;
+  background: #fff1b3;
+}
+
+.mini-pig {
+  position: absolute;
+  top: 18%;
+  width: 24%;
+  aspect-ratio: 1;
+  border: 4px solid #2a3550;
+  border-radius: 50%;
+  background: #ffb6cb;
+}
+
+.mini-pig::before,
+.mini-pig::after {
+  content: "";
+  position: absolute;
+  top: 34%;
+  width: 12%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #2a3550;
+}
+
+.mini-pig::before {
+  left: 26%;
+}
+
+.mini-pig::after {
+  right: 26%;
+}
+
+.mini-pig.p1,
+.mini-pig.p4 {
+  left: 8%;
+}
+
+.mini-pig.p2,
+.mini-pig.p5 {
+  left: 38%;
+}
+
+.mini-pig.p3 {
+  left: 68%;
+}
+
+.mini-count-sign {
+  position: absolute;
+  left: 4%;
+  top: 46%;
+  width: 17%;
+  aspect-ratio: 1;
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+  background:
+    linear-gradient(#fff, #fff) center / 56% 14% no-repeat,
+    linear-gradient(#fff, #fff) center / 14% 56% no-repeat,
+    #3fbf6e;
+}
+
+.mini-count-card {
+  position: absolute;
+  right: 2%;
+  bottom: 6%;
+  width: 30%;
+  aspect-ratio: 1.05;
+  display: grid;
+  place-items: center;
+  border: 5px solid #ffffff;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff, #dff1ff);
+  box-shadow: 0 7px 0 rgba(23, 50, 77, 0.2);
+  color: #ffffff;
+  font-size: clamp(2.4rem, 16cqw, 5rem);
+  font-weight: 1000;
+  line-height: 1;
+  -webkit-text-stroke: 6px #1d6fa3;
+  paint-order: stroke fill;
+}
+
+@supports (width: 1cqw) {
+  .count-tile .tile-title {
+    font-size: clamp(1.4rem, 8.5cqw, 3rem);
+  }
+}

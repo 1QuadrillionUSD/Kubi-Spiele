@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.16.4";
+const CACHE_VERSION = "meine-spiele-v1.17.0";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [
@@ -123,7 +123,56 @@ const FILES_TO_CACHE = [
   "./games/blasen-platzer/assets/voice/W.m4a",
   "./games/blasen-platzer/assets/voice/X.m4a",
   "./games/blasen-platzer/assets/voice/Y.m4a",
-  "./games/blasen-platzer/assets/voice/Z.m4a"
+  "./games/blasen-platzer/assets/voice/Z.m4a",
+  "./games/tiere-zaehlen/",
+  "./games/tiere-zaehlen/index.html",
+  "./games/tiere-zaehlen/style.css",
+  "./games/tiere-zaehlen/js/main.js",
+  "./games/tiere-zaehlen/js/config.js",
+  "./games/tiere-zaehlen/js/state.js",
+  "./games/tiere-zaehlen/js/tasks.js",
+  "./games/tiere-zaehlen/js/animals.js",
+  "./games/tiere-zaehlen/js/layout.js",
+  "./games/tiere-zaehlen/js/scene.js",
+  "./games/tiere-zaehlen/js/cards.js",
+  "./games/tiere-zaehlen/js/draw.js",
+  "./games/tiere-zaehlen/js/shapes.js",
+  "./games/tiere-zaehlen/js/effects.js",
+  "./games/tiere-zaehlen/js/input.js",
+  "./games/tiere-zaehlen/js/audio.js",
+  "./games/tiere-zaehlen/js/voice.js",
+  "./games/tiere-zaehlen/js/menu.js",
+  "./games/tiere-zaehlen/js/round.js",
+  "./games/tiere-zaehlen/assets/voice/de/1.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/2.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/3.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/4.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/5.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/6.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/7.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/8.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/9.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/10.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/11.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/12.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/13.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/14.m4a",
+  "./games/tiere-zaehlen/assets/voice/de/15.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/1.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/2.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/3.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/4.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/5.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/6.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/7.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/8.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/9.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/10.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/11.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/12.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/13.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/14.m4a",
+  "./games/tiere-zaehlen/assets/voice/sk/15.m4a"
 ];
 
 const asCacheUrl = (path) => new URL(path, self.registration.scope).toString();
