@@ -1,8 +1,10 @@
-// Synthetische Sounds per Web Audio – keine Audiodateien nötig.
+// Synthetische Sounds per Web Audio. Gesprochene Zeichen kommen aus voice.js (über den Sprach-Bus hier).
 const STORAGE_KEY = "meine-spiele:blasen-platzer:muted";
+const MASTER_GAIN = 0.9;
 
 let audioContext = null;
 let master = null;
+let voiceBus = null;
 let noiseBuffer = null;
 let muted = loadMuted();
 let lastPlop = 0;
@@ -25,12 +27,46 @@ function ctx() {
     comp.threshold.value = -14;
     comp.ratio.value = 6;
     master = audioContext.createGain();
-    master.gain.value = 0.9;
+    master.gain.value = MASTER_GAIN;
     master.connect(comp);
+    // Sprache läuft getrennt, damit sich nur die Töne (nicht die Stimme) leiser ducken lassen.
+    voiceBus = audioContext.createGain();
+    voiceBus.connect(comp);
     comp.connect(audioContext.destination);
   }
   if (audioContext.state === "suspended") audioContext.resume();
   return audioContext;
+}
+
+export function getContext() {
+  return ctx();
+}
+
+export function getVoiceBus() {
+  ctx();
+  return voiceBus;
+}
+
+// Töne kurz leiser, solange gesprochen wird (level = Faktor, seconds = Dauer, danach sanft zurück).
+export function duck(seconds, level, tail) {
+  const c = ctx();
+  if (!c || !master) return;
+  const g = master.gain;
+  const now = c.currentTime;
+  g.cancelScheduledValues(now);
+  g.setValueAtTime(g.value, now);
+  g.linearRampToValueAtTime(MASTER_GAIN * level, now + 0.05);
+  g.setValueAtTime(MASTER_GAIN * level, now + seconds);
+  g.linearRampToValueAtTime(MASTER_GAIN, now + seconds + tail);
+}
+
+export function unduck() {
+  if (!audioContext || !master) return;
+  const g = master.gain;
+  const now = audioContext.currentTime;
+  g.cancelScheduledValues(now);
+  g.setValueAtTime(g.value, now);
+  g.linearRampToValueAtTime(MASTER_GAIN, now + 0.15);
 }
 
 export function isMuted() {
@@ -44,14 +80,13 @@ export function toggleMuted() {
   } catch {
     /* Speichern ist optional */
   }
-  if (muted) stopSpeech();
+  if (muted) unduck();
   return muted;
 }
 
 // Muss in einer Berührung aufgerufen werden (iPad schaltet Ton erst danach frei).
 export function unlockAudio() {
   ctx();
-  primeSpeech();
 }
 
 function tone({ type = "sine", f0, f1 = f0, dur = 0.15, vol = 0.12, delay = 0, attack = 0.01 }) {
@@ -220,48 +255,18 @@ export function cheer() {
   });
 }
 
-// ------------------------------------------------------------------ Sprache
+// ---------------------------------------------------------- Finde-Modus
 
-const NUMBER_WORDS = ["", "Eins", "Zwei", "Drei", "Vier", "Fünf", "Sechs", "Sieben", "Acht", "Neun", "Zehn"];
-
-// iPad erlaubt Sprache erst, nachdem sie einmal in einer Berührung angestoßen wurde.
-let speechPrimed = false;
-function primeSpeech() {
-  if (speechPrimed) return;
-  speechPrimed = true;
-  try {
-    const synth = window.speechSynthesis;
-    if (!synth || typeof SpeechSynthesisUtterance === "undefined") return;
-    const utter = new SpeechSynthesisUtterance(" ");
-    utter.volume = 0;
-    synth.speak(utter);
-  } catch {
-    /* Sprache ist optional */
-  }
+// Richtig: fröhliche kleine Tonfolge aufwärts.
+export function rightChime() {
+  [659.25, 830.61, 1046.5].forEach((f, i) => {
+    tone({ type: "triangle", f0: f, dur: i === 2 ? 0.4 : 0.18, vol: 0.12, delay: 0.04 + i * 0.09, attack: 0.008 });
+    tone({ f0: f * 2, dur: 0.12, vol: 0.03, delay: 0.04 + i * 0.09, attack: 0.004 });
+  });
 }
 
-function stopSpeech() {
-  try {
-    window.speechSynthesis?.cancel();
-  } catch {
-    /* Sprache ist optional */
-  }
-}
-
-// Sagt die Zahl, wenn der Browser eine Stimme hat. Sonst bleibt es bei den Ziffern und Dings.
-export function sayNumber(n) {
-  if (muted) return;
-  try {
-    const synth = window.speechSynthesis;
-    if (!synth || typeof SpeechSynthesisUtterance === "undefined") return;
-    synth.cancel();
-    const utter = new SpeechSynthesisUtterance(NUMBER_WORDS[n] || String(n));
-    utter.lang = "de-DE";
-    utter.rate = 0.85;
-    utter.pitch = 1.25;
-    utter.volume = 1;
-    synth.speak(utter);
-  } catch {
-    /* Sprache ist optional */
-  }
+// Falsch: ein weiches, freundliches "Ups" – zwei sanft absteigende Sinustöne, nichts Hartes.
+export function oops() {
+  tone({ f0: 392, f1: 330, dur: 0.22, vol: 0.09, attack: 0.03 });
+  tone({ f0: 330, f1: 262, dur: 0.3, vol: 0.08, delay: 0.16, attack: 0.03 });
 }

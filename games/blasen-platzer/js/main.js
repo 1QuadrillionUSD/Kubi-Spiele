@@ -1,8 +1,8 @@
 import { bindButton } from "../../../shared/ui/game-shell.js";
 import { registerServiceWorker } from "../../../shared/utils/pwa.js";
 
-import { G, clamp, runLater } from "./state.js";
-import { GAG, IDLE, KINDS } from "./config.js";
+import { G, clamp, later, runLater } from "./state.js";
+import { FIND, GAG, IDLE, KINDS } from "./config.js";
 import { buildBackground, buildClouds, updateClouds, drawClouds, drawRainbowWash, drawWater, waterHeight } from "./scenery.js";
 import { buildSprites, drawBubble } from "./draw.js";
 import { populate, clearBubbles, updateBubbles, updateRainbow, tapAt, swipe, nudge } from "./bubbles.js";
@@ -11,9 +11,12 @@ import { updateGag, drawGag, clearGag, tapGag } from "./gags.js";
 import { resetProgress } from "./progress.js";
 import { stars, updateEffects, clearEffects, drawParticles, drawSpeech, drawBanner } from "./effects.js";
 import { createInput } from "./input.js";
+import { createMenu } from "./menu.js";
+import { initFind, resetFind, beginFind, resumeFind, pauseFind, updateFind, symbolsFor } from "./find.js";
+import * as voice from "./voice.js";
 import * as sfx from "./audio.js";
 
-const STATE = { READY: "ready", RUNNING: "running", PAUSED: "paused" };
+const STATE = { READY: "ready", RUNNING: "running", PAUSED: "paused", WON: "won" };
 
 const canvas = document.querySelector("#game-canvas");
 const ctx = canvas.getContext("2d");
@@ -26,15 +29,23 @@ const startIcon = document.querySelector("#start-button-icon");
 const soundButton = document.querySelector("#sound-button");
 const soundIcon = document.querySelector("#sound-icon");
 const poppedEl = document.querySelector("#popped");
+const scoreLabel = document.querySelector("#score-label");
+const menuButton = document.querySelector("#menu-button");
+const homeLink = document.querySelector("#home-link");
 
 let state = STATE.READY;
 let lastTs = 0;
-let shownPopped = -1;
+let shownScore = null;
+
+const menu = createMenu({
+  onChange() {
+    newGame();
+    showPanel("ready");
+  },
+});
 
 const input = createInput(canvas, {
-  onFirstTouch() {
-    sfx.unlockAudio();
-  },
+  onFirstTouch: unlockSound,
   onDown(x, y) {
     if (state !== STATE.RUNNING) return;
     if (tapGag(x, y)) {
@@ -53,6 +64,7 @@ const input = createInput(canvas, {
   },
 });
 
+initFind({ onWin: onFindWon });
 buildSprites();
 resize();
 newGame();
@@ -71,17 +83,28 @@ document.addEventListener("visibilitychange", () => {
 });
 
 bindButton("#start-button", () => {
-  sfx.unlockAudio();
+  unlockSound();
   if (state === STATE.PAUSED) resumeGame();
   else if (state === STATE.READY) startRound();
+  else if (state === STATE.WON) {
+    newGame();
+    startRound();
+  }
+});
+bindButton("#menu-button", () => {
+  unlockSound();
+  state = STATE.READY;
+  newGame();
+  showPanel("ready");
 });
 bindButton("#pause-button", () => {
-  sfx.unlockAudio();
+  unlockSound();
   togglePause();
 });
 soundButton.addEventListener("click", () => {
-  sfx.unlockAudio();
+  unlockSound();
   sfx.toggleMuted();
+  if (sfx.isMuted()) voice.stop();
   updateSoundIcon();
   if (!sfx.isMuted()) sfx.plop();
 });
@@ -103,6 +126,12 @@ requestAnimationFrame(loop);
 
 // ------------------------------------------------------------------ Aufbau
 
+// iPad schaltet Ton und Sprache erst nach einer Berührung frei.
+function unlockSound() {
+  sfx.unlockAudio();
+  voice.unlock();
+}
+
 function resize() {
   const rect = canvas.getBoundingClientRect();
   const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -113,6 +142,7 @@ function resize() {
   G.w = Math.max(1, rect.width);
   G.h = Math.max(1, rect.height);
   G.U = clamp(Math.min(G.w, G.h) / 560, 0.72, 1.5);
+  document.documentElement.style.setProperty("--u", G.U.toFixed(3)); // die Zielkarte (HTML) skaliert mit
   canvas.width = Math.floor(G.w * ratio);
   canvas.height = Math.floor(G.h * ratio);
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -143,6 +173,7 @@ function rescale(sx, sy, su) {
 }
 
 function newGame() {
+  G.mode = menu.mode;
   G.later.length = 0;
   G.time = 0;
   G.idle = 0;
@@ -155,8 +186,13 @@ function newGame() {
   clearActors();
   clearBubbles();
   clearGag();
-  populate();
-  shownPopped = -1;
+  if (G.mode === "find") resetFind(menu.kinds);
+  else {
+    G.find = null;
+    voice.stop();
+    populate();
+  }
+  shownScore = null;
   syncHud();
 }
 
@@ -165,12 +201,17 @@ function startRound() {
   startPanel.classList.add("is-hidden");
   input.reset();
   G.idle = 0;
+  if (G.mode === "find") {
+    voice.preload(symbolsFor(menu.kinds)); // Clips vorab laden (Start ist eine Berührung)
+    beginFind();
+  }
 }
 
 function pauseGame() {
   if (state !== STATE.RUNNING) return;
   state = STATE.PAUSED;
   input.reset();
+  if (G.mode === "find") pauseFind();
   showPanel("pause");
 }
 
@@ -178,6 +219,16 @@ function resumeGame() {
   state = STATE.RUNNING;
   startPanel.classList.add("is-hidden");
   G.idle = 0;
+  if (G.mode === "find") resumeFind();
+}
+
+// 20 richtige: Jubel läuft in find.js, danach erscheint das Panel mit "Nochmal".
+function onFindWon() {
+  state = STATE.WON;
+  input.reset();
+  later(FIND.winDelay, () => {
+    if (state === STATE.WON) showPanel("won");
+  });
 }
 
 function togglePause() {
@@ -188,16 +239,27 @@ function togglePause() {
 // ------------------------------------------------------------------ Panels
 
 function showPanel(mode) {
+  const find = G.mode === "find";
+  menu.show(mode === "ready");
+  menuButton.classList.toggle("is-hidden", mode !== "won");
+  homeLink.classList.toggle("is-hidden", mode === "won");
+  startIcon.innerHTML = "&#9654;";
   if (mode === "ready") {
     panelTitle.textContent = "Blasen-Platzer";
-    panelText.textContent = "Tipp auf die bunten Blasen oder wisch darüber – plopp!";
+    panelText.textContent = find
+      ? "Such das Zeichen auf der Karte und platze die passende Blase!"
+      : "Tipp auf die bunten Blasen oder wisch darüber – plopp!";
     startLabel.textContent = "Los geht's";
+  } else if (mode === "won") {
+    panelTitle.textContent = "Geschafft!";
+    panelText.textContent = `Alle ${FIND.goal} gefunden – super gemacht!`;
+    startLabel.textContent = "Nochmal";
+    startIcon.innerHTML = "&#8635;";
   } else {
     panelTitle.textContent = "Pause";
-    panelText.textContent = "Die Blasen warten auf dich.";
+    panelText.textContent = find ? "Das Ziel wartet auf dich." : "Die Blasen warten auf dich.";
     startLabel.textContent = "Weiter";
   }
-  startIcon.innerHTML = "&#9654;";
   startPanel.classList.remove("is-hidden");
 }
 
@@ -208,10 +270,13 @@ function updateSoundIcon() {
 }
 
 function syncHud() {
-  if (shownPopped === G.popped) return;
-  const first = shownPopped < 0;
-  shownPopped = G.popped;
-  poppedEl.textContent = String(G.popped);
+  const find = G.mode === "find";
+  const text = find ? `${G.find.correct} / ${FIND.goal}` : String(G.popped);
+  if (shownScore === text) return;
+  const first = shownScore === null;
+  shownScore = text;
+  scoreLabel.textContent = find ? "Richtig" : "Geplatzt";
+  poppedEl.textContent = text;
   if (!first) {
     poppedEl.classList.remove("bump");
     void poppedEl.offsetWidth;
@@ -235,8 +300,10 @@ function update(dt) {
   G.time += dt;
   runLater(dt);
   // Auf dem Startbild schweben die Blasen schon, ein "Tipp mich!" gibt es erst im Spiel.
-  if (state === STATE.READY) G.idle = 0;
-  updateBubbles(dt, true);
+  if (state === STATE.READY || state === STATE.WON) G.idle = 0;
+  const find = G.mode === "find";
+  updateBubbles(dt, !find);
+  if (find) updateFind(dt);
   updateRainbow(dt);
   updateActors(dt);
   updateGag(dt);

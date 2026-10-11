@@ -47,11 +47,11 @@ export function starRain(n = 1) {
   }
 }
 
-export function confetti(x, y, n = 30) {
+export function confetti(x, y, n = 30, colors = CONFETTI_COLORS) {
   const U = G.U;
   for (let i = 0; i < amount(n); i++) {
     const life = rand(1.6, 2.8);
-    add({ kind: "confetti", x, y, vx: rand(-280, 280) * U, vy: -rand(140, 380) * U, drag: 0.9, g: 260 * U, rot: rand(0, TAU), vr: rand(-8, 8), life, max: life, size: rand(7, 11) * U, color: pick(CONFETTI_COLORS) });
+    add({ kind: "confetti", x, y, vx: rand(-280, 280) * U, vy: -rand(140, 380) * U, drag: 0.9, g: 260 * U, rot: rand(0, TAU), vr: rand(-8, 8), life, max: life, size: rand(7, 11) * U, color: pick(colors) });
   }
 }
 

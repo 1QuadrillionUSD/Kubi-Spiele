@@ -6,6 +6,8 @@ export const G = {
   time: 0,
   bg: null,
   waterY: 0,
+  mode: "pop", // "pop" = Blasen platzen, "find" = Zahlen & Buchstaben
+  find: null, // Zustand des Finde-Modus (siehe find.js)
   bubbles: [], // Seifenblasen
   actors: [], // herausgesprungene Tiere und Zahlen
   speech: [], // Sprechblasen

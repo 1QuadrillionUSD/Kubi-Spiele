@@ -21,7 +21,7 @@
           <span aria-hidden="true">&#8962;</span>
         </a>
         <div class="score-box">
-          <span class="label">Geplatzt</span>
+          <span class="label" id="score-label">Geplatzt</span>
           <strong id="popped">0</strong>
         </div>
         <button class="icon-button sound-button" id="sound-button" type="button" aria-label="Ton an/aus">
@@ -35,15 +35,28 @@
       <section class="play-area" aria-label="Blasen-Platzer Spielfeld">
         <canvas id="game-canvas" aria-label="Spielfeld: Bunte Seifenblasen antippen und platzen lassen"></canvas>
 
+        <!-- Finde-Modus: das gesuchte Zeichen groß oben rechts; Tippen = noch einmal sagen -->
+        <button class="target-card is-hidden" id="target-card" type="button" aria-label="Gesuchtes Zeichen anhören">
+          <span class="target-symbol" id="target-symbol" aria-hidden="true"></span>
+          <span class="target-caption" id="target-caption" aria-hidden="true"></span>
+          <span class="target-speaker" aria-hidden="true">&#128266;</span>
+        </button>
+
         <div class="start-panel" id="start-panel">
           <h1 id="panel-title">Blasen-Platzer</h1>
           <p class="panel-text" id="panel-text"></p>
+          <div class="mode-picker" id="mode-picker" role="group" aria-label="Spielart wählen"></div>
+          <div class="mode-picker mode-picker-small" id="kind-picker" role="group" aria-label="Zahlen oder Buchstaben wählen"></div>
           <div class="panel-buttons">
             <button class="primary-button" id="start-button" type="button">
               <span aria-hidden="true" id="start-button-icon">&#9654;</span>
               <span id="start-button-label">Los geht's</span>
             </button>
-            <a class="secondary-button" href="../../">
+            <button class="secondary-button is-hidden" id="menu-button" type="button">
+              <span aria-hidden="true">&#9776;</span>
+              <span>Zur Auswahl</span>
+            </button>
+            <a class="secondary-button" id="home-link" href="../../">
               <span aria-hidden="true">&#8962;</span>
               <span>Zur Sammlung</span>
             </a>

@@ -228,9 +228,145 @@ a {
   font-weight: 1000;
 }
 
+/* Auswahl im Start-Panel (im Stil der Level-Chips der Hühnerjagd) */
+.mode-picker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.mode-chip {
+  min-height: 56px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  border: 4px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.82);
+  color: var(--ink);
+  font-size: clamp(0.95rem, 3vw, 1.15rem);
+  font-weight: 900;
+  box-shadow: 0 6px 0 rgba(23, 50, 77, 0.16);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mode-chip-icon {
+  font-size: 1.3em;
+  line-height: 1;
+}
+
+.mode-chip.is-active {
+  border-color: var(--sun);
+  background: #fffefa;
+}
+
+.mode-chip:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 rgba(23, 50, 77, 0.16);
+}
+
+.mode-picker-small .mode-chip {
+  min-height: 46px;
+  padding: 0 14px;
+  font-size: clamp(0.85rem, 2.6vw, 1rem);
+}
+
+/* Zielkarte (Finde-Modus): groß oben rechts im Spielfeld, deutlich unter dem Pause-Knopf. */
+.target-card {
+  --card-w: calc(var(--u, 1) * 128px);
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  width: var(--card-w);
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: calc(var(--u, 1) * 6px) 6px calc(var(--u, 1) * 8px);
+  border: 5px solid rgba(255, 254, 250, 0.9);
+  border-radius: 26px;
+  background: linear-gradient(180deg, #fffefa, #e6f5ff);
+  color: var(--ink);
+  box-shadow: 0 9px 0 rgba(23, 50, 77, 0.16), 0 14px 26px rgba(23, 50, 77, 0.16);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.target-symbol {
+  display: block;
+  min-width: 1ch;
+  color: #ffffff;
+  font-size: calc(var(--u, 1) * 90px);
+  font-weight: 1000;
+  line-height: 1.02;
+  -webkit-text-stroke: calc(var(--u, 1) * 9px) var(--sky-dark);
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 rgba(23, 50, 77, 0.12);
+}
+
+.target-symbol.is-wide {
+  font-size: calc(var(--u, 1) * 68px);
+  line-height: 1.3;
+}
+
+.target-caption {
+  color: var(--sky-dark);
+  font-size: calc(var(--u, 1) * 14px);
+  font-weight: 900;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.target-speaker {
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: calc(var(--u, 1) * 36px);
+  height: calc(var(--u, 1) * 36px);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sun);
+  box-shadow: 0 4px 0 #e5ad33;
+  font-size: calc(var(--u, 1) * 20px);
+  line-height: 1;
+}
+
+.target-card.is-new {
+  animation: card-new 0.9s ease-out;
+}
+
+.target-card.is-tap {
+  animation: card-tap 0.32s ease-out;
+}
+
+/* Sanft hervorgehoben: kurz größer, weicher Glanz – kein Blinken. */
+@keyframes card-new {
+  0% { transform: scale(0.82); box-shadow: 0 9px 0 rgba(23, 50, 77, 0.16), 0 0 0 0 rgba(255, 212, 95, 0); }
+  45% { transform: scale(1.14); box-shadow: 0 9px 0 rgba(23, 50, 77, 0.16), 0 0 0 14px rgba(255, 212, 95, 0.55); }
+  100% { transform: scale(1); box-shadow: 0 9px 0 rgba(23, 50, 77, 0.16), 0 0 0 0 rgba(255, 212, 95, 0); }
+}
+
+@keyframes card-tap {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
 @media (orientation: landscape) and (max-height: 620px) {
   .game-page {
     gap: 8px;
+  }
+
+  .mode-chip {
+    min-height: 48px;
+  }
+
+  .mode-picker-small .mode-chip {
+    min-height: 40px;
   }
 
   .start-panel {
@@ -245,7 +381,9 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .score-box strong.bump {
+  .score-box strong.bump,
+  .target-card.is-new,
+  .target-card.is-tap {
     animation: none;
   }
 }

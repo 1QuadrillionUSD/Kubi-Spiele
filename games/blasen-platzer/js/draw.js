@@ -1,5 +1,5 @@
 import { G, TAU } from "./state.js";
-import { COLORS } from "./config.js";
+import { COLORS, FIND } from "./config.js";
 import { drawFigure, FIGURE_HEIGHT } from "./animals.js";
 import { starPath } from "./effects.js";
 
@@ -108,6 +108,7 @@ export function drawBubble(ctx, b, time) {
   ctx.globalAlpha = b.alpha;
 
   if (b.lure) drawHalo(ctx, r, time, b.phase);
+  if (b.hint > 0.01) drawHint(ctx, r, time, b.hint, b.phase);
   if (b.chained) {
     ctx.strokeStyle = `rgba(255, 207, 63, ${0.65 + 0.3 * Math.sin(time * 14)})`;
     ctx.lineWidth = Math.max(4, r * 0.08);
@@ -123,6 +124,8 @@ export function drawBubble(ctx, b, time) {
   ctx.globalAlpha = b.alpha * (0.75 + 0.25 * Math.sin(time * 1.3 + b.phase));
   ctx.drawImage(shimmer, -D / 2, -D / 2, D, D);
   ctx.restore();
+
+  if (b.judge) drawJudge(ctx, r, b);
 
   ctx.save();
   ctx.scale(r, r);
@@ -153,6 +156,32 @@ function drawHalo(ctx, r, time, phase) {
     ctx.fill();
     ctx.restore();
   }
+}
+
+// Zielblase im Leerlauf: weicher, langsam atmender Schimmer (kein Blinken).
+function drawHint(ctx, r, time, amount, phase) {
+  const breathe = 0.5 + 0.5 * Math.sin(time * 2.2 + phase);
+  const reach = r * (1.35 + 0.18 * breathe);
+  const g = ctx.createRadialGradient(0, 0, r * 0.7, 0, 0, reach);
+  g.addColorStop(0, `rgba(255, 244, 170, ${amount * (0.55 + 0.25 * breathe)})`);
+  g.addColorStop(1, "rgba(255, 244, 170, 0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(0, 0, reach, 0, TAU);
+  ctx.fill();
+}
+
+// Getroffene Blase: kurz sanft grün (richtig) oder sanft rot (falsch).
+function drawJudge(ctx, r, b) {
+  const a = Math.min(1, (FIND.tintTime - b.judgeT) / 0.07);
+  const right = b.judge === "right";
+  ctx.fillStyle = right ? `rgba(48, 196, 96, ${0.72 * a})` : `rgba(255, 100, 100, ${0.54 * a})`;
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.97, 0, TAU);
+  ctx.fill();
+  ctx.lineWidth = Math.max(4, r * 0.1);
+  ctx.strokeStyle = right ? `rgba(24, 140, 64, ${a})` : `rgba(214, 72, 72, ${a})`;
+  ctx.stroke();
 }
 
 // ------------------------------------------------------- Inhalt der Blase
@@ -189,6 +218,9 @@ function drawInner(ctx, b, time) {
       break;
     case "zahl":
       drawNumber(ctx, b.num, b);
+      break;
+    case "symbol":
+      drawSymbol(ctx, b);
       break;
     default:
       break;
@@ -293,6 +325,20 @@ function drawSwarmIcon(ctx, time, phase) {
     ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
     ctx.fill();
   });
+}
+
+// Finde-Modus: genau ein großes Zeichen, weiß mit dickem Umriss (wie bei den Zahlenblasen).
+function drawSymbol(ctx, b) {
+  const wide = b.sym.length > 1;
+  ctx.font = `900 ${wide ? 1.0 : 1.2}px ${FONT}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 0.19;
+  ctx.strokeStyle = COLORS[b.color].line;
+  ctx.strokeText(b.sym, 0, 0.04);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(b.sym, 0, 0.04);
 }
 
 function drawNumber(ctx, n, b) {

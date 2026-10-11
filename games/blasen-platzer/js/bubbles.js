@@ -1,5 +1,5 @@
 import { G, rand, pick, clamp, later, TAU } from "./state.js";
-import { COUNT, BUBBLE, HIT, KINDS, TIERE, CHAIN, RAINBOW, WACKEL, GIANT, SWARM, NUMBERS, IDLE, COLORS, FX } from "./config.js";
+import { COUNT, BUBBLE, HIT, KINDS, TIERE, CHAIN, RAINBOW, WACKEL, GIANT, SWARM, NUMBERS, IDLE, COLORS, FX, FIND } from "./config.js";
 import { popBurst, stars, starRain, confetti, say } from "./effects.js";
 import { spawnAnimal, spawnDigit } from "./actors.js";
 import { addPop } from "./progress.js";
@@ -7,6 +7,11 @@ import * as sfx from "./audio.js";
 
 let speedK = 1;
 let lastAnimals = [];
+let symbolHandler = null; // Treffer auf eine Symbolblase (Finde-Modus) wertet find.js aus
+
+export function setSymbolHandler(fn) {
+  symbolHandler = fn;
+}
 
 // ------------------------------------------------------------------ Anlegen
 
@@ -44,6 +49,10 @@ function make(kind, o = {}) {
     lastHit: -9,
     grace: o.grace ?? 0,
     life: o.life ?? Infinity,
+    sym: o.sym ?? null, // Zeichen der Symbolblase (Finde-Modus)
+    judge: null, // "right" oder "wrong": Blase ist getroffen und leuchtet kurz, bevor sie platzt
+    judgeT: 0,
+    hint: 0, // 0 bis 1: sanfter Schimmer der Zielblase im Leerlauf
     hopT: rand(0.6, WACKEL.hopMax),
     sayT: 0,
     bubbleY: 0,
@@ -122,6 +131,16 @@ function spawnOne() {
   o.y = G.h + r * 0.35;
   const b = make(kind, o);
   // freeX hat mit grobem r gerechnet; für andere Arten reicht das
+  b.x = b.bx = clamp(b.x, b.r + 4, G.w - b.r - 4);
+  G.bubbles.push(b);
+  return b;
+}
+
+// Symbolblase für den Finde-Modus: steigt von unten auf (y = null) oder steht schon im Feld.
+export function spawnSymbol(sym, y = null) {
+  const r = rand(FIND.rMin, FIND.rMax);
+  const x = freeX(r * G.U);
+  const b = make("symbol", { x, y: y ?? G.h + r * G.U * 0.35, r, rise: rand(FIND.riseMin, FIND.riseMax), sym });
   b.x = b.bx = clamp(b.x, b.r + 4, G.w - b.r - 4);
   G.bubbles.push(b);
   return b;
@@ -260,7 +279,7 @@ export function updateBubbles(dt, spawning = true) {
     }
   }
 
-  if (!spawning) return;
+  if (!spawning) return; // im Finde-Modus sorgt find.js für den Nachschub
 
   // Nachschub: nie leer, nie hektisch.
   // Der nötige Abstand zur letzten neuen Blase hängt von der aktuellen Menge ab:
@@ -291,7 +310,7 @@ export function tapAt(x, y) {
   let best = null;
   let bestScore = Infinity;
   for (const b of G.bubbles) {
-    if (b.dead) continue;
+    if (b.dead || b.judge) continue;
     const r = b.r * b.scale;
     const d = Math.hypot(b.x - x, b.y - y);
     if (d > r * HIT.scale + HIT.pad * G.U) continue;
@@ -310,7 +329,7 @@ export function swipe(x0, y0, x1, y1) {
   G.idle = 0;
   const U = G.U;
   for (const b of G.bubbles.slice()) {
-    if (b.dead) continue;
+    if (b.dead || b.judge) continue;
     const r = b.r * b.scale;
     const d = segDist(b.x, b.y, x0, y0, x1, y1);
     if (d < r * HIT.swipeScale + HIT.swipePad * U) {
@@ -339,7 +358,11 @@ export function nudge(x, y) {
 }
 
 function hitBubble(b) {
-  if (b.dead) return;
+  if (b.dead || b.judge) return;
+  if (b.kind === "symbol") {
+    symbolHandler?.(b);
+    return;
+  }
   if (b.kind === "riesen" && b.hits < GIANT.taps - 1) {
     if (G.time - b.lastHit < HIT.repeatGap) return;
     b.lastHit = G.time;
@@ -414,7 +437,6 @@ export function popBubble(b, o = {}) {
       break;
     case "zahl":
       spawnDigit(b.x, b.y, b.num, col, r * 1.25);
-      sfx.sayNumber(b.num);
       break;
     case "riesen":
       confetti(b.x, b.y, 40);
