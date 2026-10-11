@@ -1,6 +1,8 @@
 // Steuerung: schwebender Joystick (irgendwo auf dem Spielfeld ziehen) und Tasten.
 const STICK_RADIUS = 62;
-const DEADZONE = 9;
+// Totzone mit Hysterese: einmal aktiv, reicht ein kleinerer Ausschlag, damit der Daumen nicht zuckt.
+const DEADZONE = 7;
+const DEADZONE_STAY = 4;
 
 const KEY_DIRECTIONS = {
   ArrowUp: "up",
@@ -67,7 +69,9 @@ export function createInput(canvas, { onFirstTouch, padEl, knobEl } = {}) {
 
   // Fester Joystick in der Ecke: Der Daumen bleibt außerhalb des Spielgeschehens.
   const pad = { active: false, id: null, x: 0, y: 0 };
-  const PAD_DEADZONE = 0.2;
+  const PAD_DEADZONE = 0.13;
+  const PAD_DEADZONE_STAY = 0.08;
+  let steering = false; // gerade außerhalb der Totzone (für die Hysterese)
 
   function setKnob(x, y) {
     if (knobEl) knobEl.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
@@ -147,15 +151,16 @@ export function createInput(canvas, { onFirstTouch, padEl, knobEl } = {}) {
   // Liefert { angle } oder null, wenn die Schlange einfach weiterlaufen soll.
   function getSteer() {
     if (pad.active) {
-      if (Math.hypot(pad.x, pad.y) > PAD_DEADZONE) return { angle: Math.atan2(pad.y, pad.x) };
-      return null;
+      steering = Math.hypot(pad.x, pad.y) > (steering ? PAD_DEADZONE_STAY : PAD_DEADZONE);
+      return steering ? { angle: Math.atan2(pad.y, pad.x) } : null;
     }
     if (stick.active) {
       const dx = stick.x - stick.ox;
       const dy = stick.y - stick.oy;
-      if (Math.hypot(dx, dy) > DEADZONE) return { angle: Math.atan2(dy, dx) };
-      return null;
+      steering = Math.hypot(dx, dy) > (steering ? DEADZONE_STAY : DEADZONE);
+      return steering ? { angle: Math.atan2(dy, dx) } : null;
     }
+    steering = false;
     const x = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     const y = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
     if (x === 0 && y === 0) return null;

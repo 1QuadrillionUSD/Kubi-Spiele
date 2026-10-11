@@ -5,16 +5,40 @@ export const SNAKE = {
   speed: 168,
   turboFactor: 1.65,
   slipFactor: 1.12,
-  turn: 3.7,
-  slipTurn: 1.1,
+  // Lenkung: Die Drehrate wächst mit dem Winkelfehler. Kleine Korrekturen bleiben weich
+  // (turn), große Richtungswechsel und Kehrtwenden gehen flott (turnMax, ca. 0,4 s).
+  turn: 4.6,
+  turnMax: 10.5,
+  turnRamp: 1.2, // Winkelfehler in rad, ab dem die volle Drehrate gilt
+  steerSmooth: 0.04, // Glättung der Joystick-Richtung in s (gegen Daumen-Zucken), 0 = aus
+  slipTurn: 2.2, // Drehrate in der Pfütze (rutschig, aber nicht hilflos)
   segGap: 8.5,
   bodyR: 16,
   headR: 21,
   startLen: 14,
   minLen: 12,
   turboTime: 4.5,
-  slipTime: 1.6,
+  slipTime: 0.9,
   hideTime: 5,
+  // Wände: Erst dicht am Rand (Einheiten vom Kopfmittelpunkt) schwächt sich die Eingabe
+  // Richtung Wand ab. Danach gleitet der Kopf mit voller Geschwindigkeit am Rand entlang.
+  wallZone: 34,
+  autoMargin: 60, // ohne Eingabe dreht die Schlange so weit vor der Wand sanft ab
+  // Knoten: nur bei echtem, deutlichem Kopf-in-Körper-Treffer.
+  knotMinLen: 24, // darunter gibt es nie einen Knoten
+  knotMinIndex: 20, // so weit hinten muss das getroffene Körperteil sein
+  knotRadius: 0.65, // Trefferradius in Kopfradien
+  knotWallDist: 80, // nahe der Wand (Einheiten) gibt es keinen Knoten
+  knotWallTime: 1.2, // Schonzeit in s nach dem Gleiten an einer Wand
+};
+
+// Sanfte Lenkhilfe: neigt die Richtung leicht zum nächsten fangbaren Huhn im Kegel vor dem Kopf.
+export const AIM_ASSIST = {
+  on: true, // false schaltet die Lenkhilfe ganz aus
+  cone: 0.6, // halber Öffnungswinkel in rad (ca. 34°)
+  range: 230, // Reichweite in Einheiten
+  strength: 0.22, // Anteil des Winkelunterschieds, der ausgeglichen wird (0 bis 1)
+  maxTilt: 0.2, // größte Korrektur in rad (ca. 11°)
 };
 
 export const CHICKEN_TYPES = {

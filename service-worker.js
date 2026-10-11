@@ -1,4 +1,4 @@
-const CACHE_VERSION = "meine-spiele-v1.13.0";
+const CACHE_VERSION = "meine-spiele-v1.15.0";
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 const FILES_TO_CACHE = [
@@ -68,7 +68,23 @@ const FILES_TO_CACHE = [
   "./games/huehnerjagd/js/scenery.js",
   "./games/huehnerjagd/js/items.js",
   "./games/huehnerjagd/js/gags.js",
-  "./games/huehnerjagd/assets/characters/hen-head-cutout.png"
+  "./games/huehnerjagd/assets/characters/hen-head-cutout.png",
+  "./games/blasen-platzer/",
+  "./games/blasen-platzer/index.html",
+  "./games/blasen-platzer/style.css",
+  "./games/blasen-platzer/js/main.js",
+  "./games/blasen-platzer/js/config.js",
+  "./games/blasen-platzer/js/state.js",
+  "./games/blasen-platzer/js/audio.js",
+  "./games/blasen-platzer/js/effects.js",
+  "./games/blasen-platzer/js/input.js",
+  "./games/blasen-platzer/js/bubbles.js",
+  "./games/blasen-platzer/js/actors.js",
+  "./games/blasen-platzer/js/animals.js",
+  "./games/blasen-platzer/js/draw.js",
+  "./games/blasen-platzer/js/scenery.js",
+  "./games/blasen-platzer/js/gags.js",
+  "./games/blasen-platzer/js/progress.js"
 ];
 
 const asCacheUrl = (path) => new URL(path, self.registration.scope).toString();
